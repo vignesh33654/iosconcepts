@@ -11,7 +11,7 @@ import SwiftUI
 struct iosconceptsApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            DigilockerMainPage()
         }
     }
 }
