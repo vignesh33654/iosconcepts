@@ -1,0 +1,13 @@
+---
+alwaysApply: true
+---
+
+# Global Rules
+
+- Don't over-engineer — no abstractions, helpers, or patterns beyond what's asked
+- When removing something, delete it fully — no stubs, no commented-out code
+- Styling and positioning live in the component file, not the parent
+- Add a short inline comment only where a value needs to be tweaked (e.g. `// ← adjust bottom spacing`)
+- Don't change size or rotation unless explicitly asked
+- Prefer editing existing files over creating new ones
+- Keep responses short and direct
