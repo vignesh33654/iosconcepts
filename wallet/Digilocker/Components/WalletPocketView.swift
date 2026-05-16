@@ -18,7 +18,7 @@ struct WalletPocketView: View {
 
             bundledImage(named: "Pocket")
                 .frame(width: width * 0.98)
-                .offset(y: -1) // ← pocket overlap on background
+                .offset(y: -22) // ← pocket overlap on background
         }
         .shadow(color: .black.opacity(0.18), radius: 28, x: 0, y: 18) // ← shadow style
         .padding(.bottom, 16) // ← distance from bottom of screen
