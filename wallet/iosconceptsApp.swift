@@ -1,6 +1,6 @@
 //
-//  walletApp.swift
-//  wallet
+//  iosconceptsApp.swift
+//  iosconcepts
 //
 //  Created by vignesh on 16/05/26.
 //
@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct walletApp: App {
+struct iosconceptsApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

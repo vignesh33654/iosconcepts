@@ -6,8 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		2FE9C4D32FB843D6006EC7FE /* AGENTS.md in Resources */ = {isa = PBXBuildFile; fileRef = 2FE9C4D22FB843D6006EC7FE /* AGENTS.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		2FE9C4B92FB82BD6006EC7FE /* wallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = wallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2FE9C4D22FB843D6006EC7FE /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -34,6 +39,7 @@
 			children = (
 				2FE9C4BB2FB82BD6006EC7FE /* wallet */,
 				2FE9C4BA2FB82BD6006EC7FE /* Products */,
+				2FE9C4D22FB843D6006EC7FE /* AGENTS.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -109,6 +115,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2FE9C4D32FB843D6006EC7FE /* AGENTS.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
