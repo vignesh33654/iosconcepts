@@ -10,7 +10,6 @@ import SwiftUI
 struct Main: View {
     private let frontCardImageName = "Arav front"
     private let backCardImageName = "Arav back"
-    private let cardRestingBottom = 180.0
     private let dimAmount = 0.0
 
     @State private var unlockState: FaceIDUnlockState = .idle
@@ -19,8 +18,7 @@ struct Main: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let cardWidth = min(geometry.size.width - 40, 450)
-            let floatingCardWidth = cardWidth * 0.9
+            let cardWidth = min(geometry.size.width - 40, 450) * 0.9
 
             ZStack {
                 content(width: cardWidth, height: geometry.size.height)
@@ -29,17 +27,6 @@ struct Main: View {
                     .ignoresSafeArea()
                     .allowsHitTesting(isExpanded)
                     .onTapGesture { collapseCard() }
-
-                Card(
-                    width: floatingCardWidth,
-                    centerX: geometry.size.width / 2,
-                    expandedY: geometry.size.height / 2,
-                    collapsedY: geometry.size.height - cardRestingBottom,
-                    isExpanded: isExpanded,
-                    frontImageName: frontCardImageName,
-                    backImageName: backCardImageName,
-                    onTap: collapseCard
-                )
 
                 resetControl
             }
@@ -65,11 +52,11 @@ struct Main: View {
                 width: width,
                 cardImageName: frontCardImageName,
                 backCardImageName: backCardImageName,
-                isCardVisible: !isExpanded
+                isExpanded: isExpanded
             )
             .contentShape(Rectangle())
-            .allowsHitTesting(unlockState == .unlocked && !isExpanded)
-            .onTapGesture { expandCard() }
+            .allowsHitTesting(unlockState == .unlocked)
+            .onTapGesture { toggleWallet() }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -99,6 +86,10 @@ struct Main: View {
             withAnimation(.smooth(duration: 0.2)) {
                 unlockState = .unlocked
             }
+
+            withAnimation(.spring(response: 0.62, dampingFraction: 0.74, blendDuration: 0.08)) {
+                isExpanded = true
+            }
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
@@ -108,16 +99,16 @@ struct Main: View {
         }
     }
 
-    private func expandCard() {
+    private func toggleWallet() {
         guard unlockState == .unlocked else { return }
 
-        withAnimation(.spring(duration: 0.4)) {
-            isExpanded = true
+        withAnimation(.spring(response: 0.62, dampingFraction: 0.74, blendDuration: 0.08)) {
+            isExpanded.toggle()
         }
     }
 
     private func collapseCard() {
-        withAnimation(.spring(duration: 0.4)) {
+        withAnimation(.spring(response: 0.62, dampingFraction: 0.74, blendDuration: 0.08)) {
             isExpanded = false
         }
     }
