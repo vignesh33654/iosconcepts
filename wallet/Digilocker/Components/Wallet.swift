@@ -28,12 +28,14 @@ struct Wallet: View {
 
     private let title = "Welcome to digilocker"
     private let subtitle = "Use your Face ID to check out all your IDs"
-    private let headerTopSpaceRatio = 0.18
+    private let headerTopSpacing: CGFloat = 40
 
     private let backgroundImageName = "Background"
     private let pocketImageName = "Pocket 2"
     private let secondCardFrontImageName = "Nandhi front"
     private let secondCardBackImageName = "Nandhi back"
+    
+    // Wallet and card
 
     private let backgroundOffsetY: CGFloat = -6
     private let pocketWidthExtra: CGFloat = 2
@@ -41,6 +43,7 @@ struct Wallet: View {
     private let bottomPadding: CGFloat = 16
     private let cardCornerRadius: CGFloat = 10
     private let cardStrokeWidth: CGFloat = 2
+
 
     private let springResponse = 0.45
     private let springDamping = 0.69
@@ -56,14 +59,14 @@ struct Wallet: View {
     private let flipBounce = 0.02
     private let selectedCardSpringResponse = 0.5
     private let selectedCardSpringDamping = 0.8
-    private let selectedCardUp: CGFloat = -120
+    private let selectedCardUp: CGFloat = -80
 
     // Simple card configuration - no more array index errors!
     private func cardConfig(for index: Int) -> (lift: CGFloat, rest: CGFloat, rotation: Double, scale: CGFloat, widthScale: CGFloat) {
         switch index {
-        case 0: return (lift: -60, rest: 9, rotation: -1.4, scale: 1.025, widthScale: 0.86)
-        case 1: return (lift: -28, rest: 10, rotation: 0.8, scale: 1.022, widthScale: 0.88)
-        case 2: return (lift: 12, rest: 23, rotation: -0.4, scale: 1.012, widthScale: 0.9)
+        case 0: return (lift: -60, rest: 9, rotation: 0, scale: 1.025, widthScale: 0.86)
+        case 1: return (lift: -28, rest: 10, rotation:0 , scale: 1.022, widthScale: 0.88)
+        case 2: return (lift: 12, rest: 23, rotation: 0, scale: 1.012, widthScale: 0.9)
         default: return (lift: 0, rest: 0, rotation: 0, scale: 1.0, widthScale: 1.0)
         }
     }
@@ -75,15 +78,13 @@ struct Wallet: View {
     @State private var cardBaseCenters: [Int: CGPoint] = [:]
 
     var body: some View {
-        GeometryReader { geometry in
-            VStack(spacing: 0) {
-                Spacer().frame(height: geometry.size.height * headerTopSpaceRatio)
-                header
-                Spacer()
-                walletContent
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        VStack(spacing: 0) {
+            Spacer().frame(height: headerTopSpacing)
+            header
+            Spacer()
+            walletContent
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var header: some View {
