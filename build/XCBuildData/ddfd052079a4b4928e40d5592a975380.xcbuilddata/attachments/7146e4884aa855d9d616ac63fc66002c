@@ -1,0 +1,119 @@
+{
+  "" : {
+    "diagnostics" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/wallet-primary.dia",
+    "emit-module-dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/wallet-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/wallet-primary-emit-module.dia",
+    "pch" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/wallet-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/wallet-primary.swiftdeps"
+  },
+  "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  },
+  "/Users/vignesh/Desktop/wallet/wallet/ContentView.swift" : {
+    "const-values" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/ContentView.d",
+    "diagnostics" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/ContentView.dia",
+    "index-unit-output-path" : "/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/ContentView.o",
+    "swift-dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/ContentView.swiftdeps",
+    "swiftmodule" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/ContentView~partial.swiftmodule"
+  },
+  "/Users/vignesh/Desktop/wallet/wallet/Digilocker/Components/FaceIDUnlockButton.swift" : {
+    "const-values" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/FaceIDUnlockButton.swiftconstvalues",
+    "dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/FaceIDUnlockButton.d",
+    "diagnostics" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/FaceIDUnlockButton.dia",
+    "index-unit-output-path" : "/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/FaceIDUnlockButton.o",
+    "llvm-bc" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/FaceIDUnlockButton.bc",
+    "object" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/FaceIDUnlockButton.o",
+    "swift-dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/FaceIDUnlockButton.swiftdeps",
+    "swiftmodule" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/FaceIDUnlockButton~partial.swiftmodule"
+  },
+  "/Users/vignesh/Desktop/wallet/wallet/Digilocker/Components/Wallet.swift" : {
+    "const-values" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/Wallet.swiftconstvalues",
+    "dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/Wallet.d",
+    "diagnostics" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/Wallet.dia",
+    "index-unit-output-path" : "/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/Wallet.o",
+    "llvm-bc" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/Wallet.bc",
+    "object" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/Wallet.o",
+    "swift-dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/Wallet.swiftdeps",
+    "swiftmodule" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/Wallet~partial.swiftmodule"
+  },
+  "/Users/vignesh/Desktop/wallet/wallet/Digilocker/Components/WalletPreviewConfig.swift" : {
+    "const-values" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletPreviewConfig.swiftconstvalues",
+    "dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletPreviewConfig.d",
+    "diagnostics" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletPreviewConfig.dia",
+    "index-unit-output-path" : "/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletPreviewConfig.o",
+    "llvm-bc" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletPreviewConfig.bc",
+    "object" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletPreviewConfig.o",
+    "swift-dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletPreviewConfig.swiftdeps",
+    "swiftmodule" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletPreviewConfig~partial.swiftmodule"
+  },
+  "/Users/vignesh/Desktop/wallet/wallet/Digilocker/Config/WalletConfig.swift" : {
+    "const-values" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletConfig.swiftconstvalues",
+    "dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletConfig.d",
+    "diagnostics" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletConfig.dia",
+    "index-unit-output-path" : "/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletConfig.o",
+    "llvm-bc" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletConfig.bc",
+    "object" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletConfig.o",
+    "swift-dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletConfig.swiftdeps",
+    "swiftmodule" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletConfig~partial.swiftmodule"
+  },
+  "/Users/vignesh/Desktop/wallet/wallet/Digilocker/Helpers/WalletLayoutCalculator.swift" : {
+    "const-values" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletLayoutCalculator.swiftconstvalues",
+    "dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletLayoutCalculator.d",
+    "diagnostics" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletLayoutCalculator.dia",
+    "index-unit-output-path" : "/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletLayoutCalculator.o",
+    "llvm-bc" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletLayoutCalculator.bc",
+    "object" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletLayoutCalculator.o",
+    "swift-dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletLayoutCalculator.swiftdeps",
+    "swiftmodule" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletLayoutCalculator~partial.swiftmodule"
+  },
+  "/Users/vignesh/Desktop/wallet/wallet/Digilocker/Models/FaceIDUnlockState.swift" : {
+    "const-values" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/FaceIDUnlockState.swiftconstvalues",
+    "dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/FaceIDUnlockState.d",
+    "diagnostics" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/FaceIDUnlockState.dia",
+    "index-unit-output-path" : "/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/FaceIDUnlockState.o",
+    "llvm-bc" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/FaceIDUnlockState.bc",
+    "object" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/FaceIDUnlockState.o",
+    "swift-dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/FaceIDUnlockState.swiftdeps",
+    "swiftmodule" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/FaceIDUnlockState~partial.swiftmodule"
+  },
+  "/Users/vignesh/Desktop/wallet/wallet/Digilocker/Models/WalletCardLayout.swift" : {
+    "const-values" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletCardLayout.swiftconstvalues",
+    "dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletCardLayout.d",
+    "diagnostics" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletCardLayout.dia",
+    "index-unit-output-path" : "/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletCardLayout.o",
+    "llvm-bc" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletCardLayout.bc",
+    "object" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletCardLayout.o",
+    "swift-dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletCardLayout.swiftdeps",
+    "swiftmodule" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/WalletCardLayout~partial.swiftmodule"
+  },
+  "/Users/vignesh/Desktop/wallet/wallet/Digilocker/Pages/Main.swift" : {
+    "const-values" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/Main.swiftconstvalues",
+    "dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/Main.d",
+    "diagnostics" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/Main.dia",
+    "index-unit-output-path" : "/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/Main.o",
+    "llvm-bc" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/Main.bc",
+    "object" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/Main.o",
+    "swift-dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/Main.swiftdeps",
+    "swiftmodule" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/Main~partial.swiftmodule"
+  },
+  "/Users/vignesh/Desktop/wallet/wallet/iosconceptsApp.swift" : {
+    "const-values" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/iosconceptsApp.swiftconstvalues",
+    "dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/iosconceptsApp.d",
+    "diagnostics" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/iosconceptsApp.dia",
+    "index-unit-output-path" : "/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/iosconceptsApp.o",
+    "llvm-bc" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/iosconceptsApp.bc",
+    "object" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/iosconceptsApp.o",
+    "swift-dependencies" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/iosconceptsApp.swiftdeps",
+    "swiftmodule" : "/Users/vignesh/Desktop/wallet/build/wallet.build/Debug-iphoneos/wallet.build/Objects-normal/arm64/iosconceptsApp~partial.swiftmodule"
+  }
+}

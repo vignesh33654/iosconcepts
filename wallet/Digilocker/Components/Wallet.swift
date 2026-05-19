@@ -73,6 +73,7 @@ struct Wallet: View {
             image(named: Config.backgroundImageName)
                 .frame(width: width)
                 .offset(y: Config.backgroundOffsetY)
+                .allowsHitTesting(false)
 
             cardStack
 
@@ -80,8 +81,8 @@ struct Wallet: View {
                 .frame(width: width + Config.pocketWidthExtra)
                 .offset(y: Config.pocketOffsetY)
                 .zIndex(Config.pocketZIndex)
+                .allowsHitTesting(false)
         }
-        .contentShape(Rectangle())
         .padding(.bottom, Config.bottomPadding)
         .task {
             // Auto-expand on appear
@@ -251,6 +252,8 @@ struct Wallet: View {
     }
 }
 
+// MARK: - WalletCardView
+
 private struct WalletCardView: View {
     let width: CGFloat
     let frontImageName: String
@@ -296,8 +299,7 @@ private struct WalletCardView: View {
             .rotation3DEffect(.degrees(backFaceRotationAngle), axis: (x: 1, y: 0, z: 0))
             .opacity(isShowingBack ? visibleOpacity : hiddenOpacity)
         }
-        .contentShape(Rectangle())
-        .allowsHitTesting(isExpanded)
+        .compositingGroup()
         .rotation3DEffect(
             .degrees(flipAngle),
             axis: (x: 1, y: 0, z: 0),
@@ -308,6 +310,13 @@ private struct WalletCardView: View {
         .rotationEffect(.degrees(isFlipped ? 0 : rotation))
         .offset(x: selectedOffset.width, y: selectedOffset.height)
         .zIndex(zIndex)
+        // FIX: Do NOT use .contentShape(Rectangle()) here.
+        // contentShape is evaluated at layout position (before offset),
+        // so the hit-test zone would stay at the wallet slot even after
+        // the card animates to the screen center.
+        // Instead, attach the tap directly — SwiftUI will hit-test against
+        // the actual rendered (post-offset) bounds of the visible content.
+        .allowsHitTesting(isExpanded)
         .onTapGesture(perform: onTap)
     }
 
@@ -320,6 +329,8 @@ private struct WalletCardView: View {
         )
     }
 }
+
+// MARK: - CardImageView
 
 private struct CardImageView: View {
     let imageName: String
@@ -350,6 +361,8 @@ private struct CardImageView: View {
     }
 }
 
+// MARK: - Preference Key
+
 private struct CardCenterPreferenceKey: PreferenceKey {
     static var defaultValue: [Int: CGPoint] = [:]
 
@@ -357,6 +370,8 @@ private struct CardCenterPreferenceKey: PreferenceKey {
         value.merge(nextValue(), uniquingKeysWith: { _, newValue in newValue })
     }
 }
+
+// MARK: - Preview
 
 #Preview {
     GeometryReader { geo in

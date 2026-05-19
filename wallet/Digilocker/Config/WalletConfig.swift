@@ -13,6 +13,9 @@ enum WalletConfig {
     static let defaultCardCount = 3
     static let previewHorizontalPadding: CGFloat = 38
     static let previewMaxWalletWidth: CGFloat = 320
+    static let mainMaxWalletWidth: CGFloat = 450
+    static let mainWalletHorizontalPadding: CGFloat = 40
+    static let mainWalletWidthScale: CGFloat = 0.9
 
     static let title = "Welcome to digilocker"
     static let subtitle = "Use your Face ID to check out all your IDs"

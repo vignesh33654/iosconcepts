@@ -1,0 +1,16 @@
+{
+  "source": "/Users/vignesh/Desktop/wallet/wallet/ContentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Hello, hello!",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 16
+        }
+      }
+    ]
+  },
+  "version": 1
+}
