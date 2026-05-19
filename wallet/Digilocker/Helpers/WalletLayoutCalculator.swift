@@ -8,7 +8,7 @@
 import SwiftUI
 
 /// This file only does the small math for the wallet.
-/// Change the numbers in Wallet.swift to move cards, resize them, or change when the back side shows.
+/// Change WalletConfig.swift to move cards, resize them, or change when the back side shows.
 enum WalletLayoutCalculator {
     static func scales(from layouts: [WalletCardLayout]) -> [CGFloat] {
         layouts.map(\.scale)
@@ -27,14 +27,14 @@ enum WalletLayoutCalculator {
     }
 
     static func selectedOffset(
-        flippedCardIndex: Int?,
+        selectedCardIndex: Int?,
         index: Int,
         cardCenter: CGPoint?,
         screenCenter: CGPoint?,
         selectedCardUp: CGFloat
     ) -> CGSize {
         guard
-            flippedCardIndex == index,
+            selectedCardIndex == index,
             let cardCenter,
             let screenCenter
         else {

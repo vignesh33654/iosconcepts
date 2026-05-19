@@ -18,12 +18,12 @@ enum WalletConfig {
     static let mainWalletWidthScale: CGFloat = 0.9
 
     static let title = "Welcome to digilocker"
-    static let subtitle = "Use your Face ID to check out all your IDs"
-    static let headerTopSpacing: CGFloat = 40
-    static let headerSpacing: CGFloat = 4
+    static let subtitle = "Use your Face ID to check out all your ID"
+    static let headerTopSpacing: CGFloat = 80
+    static let headerSpacing: CGFloat = 8
     static let headerHorizontalPadding: CGFloat = 24
-    static let titleFontSize: CGFloat = 24
-    static let subtitleFontSize: CGFloat = 16
+    static let titleFontSize: CGFloat = 20
+    static let subtitleFontSize: CGFloat = 15
     static let titleMinimumScale: CGFloat = 0.8
     static let subtitleMinimumScale: CGFloat = 0.75
     static let headerLineLimit = 1
@@ -55,14 +55,16 @@ enum WalletConfig {
     static let punchDelayNanoseconds: UInt64 = 80_000_000
     static let punchScale: CGFloat = 0.86
 
-    static let flipAngle = 360.0
+    static let flipAngle = 180.0
+    static let openFlipAngle = 360.0
     static let flipDuration = 0.72
     static let flipBounce = 0.02
+    static let cardSwipeMinimumDistance: CGFloat = 28
     static let selectedCardSpringResponse = 0.5
     static let selectedCardSpringDamping = 0.8
     static let selectedCardUp: CGFloat = -80
-    static let tapSpringResponse = 0.6
-    static let tapSpringDamping = 0.75
+    static let swipeSpringResponse = 0.6
+    static let swipeSpringDamping = 0.75
     static let backFaceRotationAngle = 180.0
     static let flipPerspective: CGFloat = 0.5
     static let backVisibleStartAngle = 90.0
