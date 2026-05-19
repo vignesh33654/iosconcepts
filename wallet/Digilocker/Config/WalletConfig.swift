@@ -73,6 +73,11 @@ enum WalletConfig {
     static let hiddenOpacity = 0.0
     static let visibleOpacity = 1.0
     static let cardBorderEndColor = Color(red: 0.82, green: 0.82, blue: 0.82)
+    static let gyroscopeNeutralAngle = 0.0
+    static let gyroscopeMaxTiltAngle = 4.5
+    static let gyroscopeMotionScale = 10.0
+    static let gyroscopeUpdateInterval = 1.0 / 60.0
+    static let gyroscopeResetDuration = 0.45
     static let cardLayouts: [WalletCardLayout] = [
         WalletCardLayout(lift: -60, rest: 9, rotation: 0, scale: 1.025, widthScale: 0.86),
         WalletCardLayout(lift: -28, rest: 10, rotation: 0, scale: 1.022, widthScale: 0.88),
