@@ -8,9 +8,6 @@
 import SwiftUI
 
 struct Main: View {
-    private let title = "Welcome to digilocker"
-    private let subtitle = "Use your Face ID to check out all your IDs"
-    private let headerTopSpaceRatio = 0.18
     private let maxWalletWidth = 450.0
     private let walletHorizontalPadding = 40.0
     private let walletWidthScale = 0.9
@@ -25,10 +22,13 @@ struct Main: View {
             let cardWidth = min(geometry.size.width - walletHorizontalPadding, maxWalletWidth) * walletWidthScale
             let screenFrame = geometry.frame(in: .global)
 
-            VStack(spacing: 0) {
-                Spacer().frame(height: geometry.size.height * headerTopSpaceRatio)
-                header
-                Spacer()
+            ZStack {
+                Wallet(
+                    width: cardWidth,
+                    cardImageName: frontCardImageName,
+                    backCardImageName: backCardImageName,
+                    screenCenter: CGPoint(x: screenFrame.midX, y: screenFrame.midY)
+                )
 
                 if !bypassFaceID {
                     FaceIDUnlockButton(
@@ -39,36 +39,9 @@ struct Main: View {
                         unlockAfterFaceID()
                     }
                 }
-
-                Spacer()
-
-                Wallet(
-                    width: cardWidth,
-                    cardImageName: frontCardImageName,
-                    backCardImageName: backCardImageName,
-                    screenCenter: CGPoint(x: screenFrame.midX, y: screenFrame.midY)
-                )
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-    }
-
-    private var header: some View {
-        VStack(spacing: 4) {
-            Text(title)
-                .font(.system(size: 24, weight: .regular, design: .serif))
-                .foregroundStyle(.black)
-                .minimumScaleFactor(0.8)
-                .lineLimit(1)
-
-            Text(subtitle)
-                .font(.system(size: 16, weight: .regular, design: .serif))
-                .foregroundStyle(.secondary)
-                .minimumScaleFactor(0.75)
-                .lineLimit(1)
-        }
-        .multilineTextAlignment(.center)
-        .padding(.horizontal, 24)
     }
 
     private func startFaceIDScan() {

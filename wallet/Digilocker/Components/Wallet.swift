@@ -26,6 +26,10 @@ struct Wallet: View {
         self.screenCenter = screenCenter
     }
 
+    private let title = "Welcome to digilocker"
+    private let subtitle = "Use your Face ID to check out all your IDs"
+    private let headerTopSpaceRatio = 0.18
+
     private let backgroundImageName = "Background"
     private let pocketImageName = "Pocket 2"
     private let secondCardFrontImageName = "Nandhi front"
@@ -71,6 +75,36 @@ struct Wallet: View {
     @State private var cardBaseCenters: [Int: CGPoint] = [:]
 
     var body: some View {
+        GeometryReader { geometry in
+            VStack(spacing: 0) {
+                Spacer().frame(height: geometry.size.height * headerTopSpaceRatio)
+                header
+                Spacer()
+                walletContent
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    private var header: some View {
+        VStack(spacing: 4) {
+            Text(title)
+                .font(.system(size: 24, weight: .regular, design: .serif))
+                .foregroundStyle(.black)
+                .minimumScaleFactor(0.8)
+                .lineLimit(1)
+
+            Text(subtitle)
+                .font(.system(size: 16, weight: .regular, design: .serif))
+                .foregroundStyle(.secondary)
+                .minimumScaleFactor(0.75)
+                .lineLimit(1)
+        }
+        .multilineTextAlignment(.center)
+        .padding(.horizontal, 24)
+    }
+
+    private var walletContent: some View {
         ZStack(alignment: .top) {
             image(named: backgroundImageName)
                 .frame(width: width)
@@ -89,7 +123,7 @@ struct Wallet: View {
             // Auto-expand on appear
             try? await Task.sleep(nanoseconds: autoExpandDelayNanoseconds)
             guard !Task.isCancelled else { return }
-            
+
             withAnimation(walletSpring) {
                 isExpanded = true
             }
