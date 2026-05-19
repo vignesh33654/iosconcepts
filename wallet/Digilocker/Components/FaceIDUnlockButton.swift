@@ -5,6 +5,7 @@
 //  Created by vignesh on 18/05/26.
 //
 
+import LocalAuthentication
 import SwiftUI
 
 enum FaceIDUnlockState {
@@ -15,48 +16,65 @@ enum FaceIDUnlockState {
 
 struct FaceIDUnlockButton: View {
     let state: FaceIDUnlockState
+    let onAuthenticationStart: () -> Void
+    let onAuthenticationFailure: () -> Void
     let action: () -> Void
 
-    private let iconSize = 56.0
-    private let tapAreaSize = 92.0
+    @State private var isAuthenticating = false
+
+    init(
+        state: FaceIDUnlockState,
+        onAuthenticationStart: @escaping () -> Void = {},
+        onAuthenticationFailure: @escaping () -> Void = {},
+        action: @escaping () -> Void
+    ) {
+        self.state = state
+        self.onAuthenticationStart = onAuthenticationStart
+        self.onAuthenticationFailure = onAuthenticationFailure
+        self.action = action
+    }
 
     var body: some View {
-        Button(action: action) {
-            VStack(spacing: 10) {
-                ZStack {
-                    Image(systemName: "faceid")
-                        .font(.system(size: iconSize, weight: .light))
-                        .symbolRenderingMode(.hierarchical)
-                        .foregroundStyle(Color(red: 0.32, green: 0.3, blue: 0.29))
-                        .scaleEffect(state == .scanning ? 0.92 : 1.0)
-                        .opacity(state == .unlocked ? 0 : 1)
+        Color.clear
+            .frame(width: 0, height: 0)
+            .accessibilityHidden(true)
+            .onAppear(perform: authenticateWithFaceID)
+    }
 
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: iconSize, weight: .regular))
-                        .symbolRenderingMode(.hierarchical)
-                        .foregroundStyle(.blue)
-                        .scaleEffect(state == .unlocked ? 1.0 : 0.72)
-                        .opacity(state == .unlocked ? 1 : 0)
-                }
-                .frame(width: tapAreaSize, height: tapAreaSize)
+    private func authenticateWithFaceID() {
+        guard state == .idle, !isAuthenticating else { return }
 
-                Text("Face ID")
-                    .font(.system(size: 17, weight: .regular))
-                    .foregroundStyle(.secondary)
-                    .opacity(state == .unlocked ? 0 : 1)
-            }
-            .contentShape(Rectangle())
+        isAuthenticating = true
+        onAuthenticationStart()
+
+        let context = LAContext()
+        context.localizedCancelTitle = "Cancel"
+
+        var error: NSError?
+        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error), context.biometryType == .faceID else {
+            finishAuthentication(success: false)
+            return
         }
-        .buttonStyle(.plain)
-        .disabled(state != .idle)
-        .accessibilityLabel("Unlock with Face ID")
+
+        context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: "Unlock your wallet") { success, _ in
+            Task { @MainActor in
+                finishAuthentication(success: success)
+            }
+        }
+    }
+
+    @MainActor
+    private func finishAuthentication(success: Bool) {
+        isAuthenticating = false
+
+        if success {
+            action()
+        } else {
+            onAuthenticationFailure()
+        }
     }
 }
 
 #Preview {
-    VStack(spacing: 32) {
-        FaceIDUnlockButton(state: .idle, action: {})
-        FaceIDUnlockButton(state: .scanning, action: {})
-        FaceIDUnlockButton(state: .unlocked, action: {})
-    }
+    FaceIDUnlockButton(state: .idle, action: {})
 }

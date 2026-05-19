@@ -8,116 +8,88 @@
 import SwiftUI
 
 struct Main: View {
+    private let title = "Welcome to digilocker"
+    private let subtitle = "Use your Face ID to check out all your IDs"
+    private let headerTopSpaceRatio = 0.18
+    private let maxWalletWidth = 450.0
+    private let walletHorizontalPadding = 40.0
+    private let walletWidthScale = 0.9
     private let frontCardImageName = "Arav front"
     private let backCardImageName = "Arav back"
-    private let dimAmount = 0.0
 
-    @State private var unlockState: FaceIDUnlockState = .idle
-    @State private var isUnlockControlVisible = true
-    @State private var isExpanded = false
+    @State private var unlockState: FaceIDUnlockState = .unlocked  // Start unlocked for testing
+    @State private var bypassFaceID = true  // Toggle this to enable/disable Face ID
 
     var body: some View {
         GeometryReader { geometry in
-            let cardWidth = min(geometry.size.width - 40, 450) * 0.9
+            let cardWidth = min(geometry.size.width - walletHorizontalPadding, maxWalletWidth) * walletWidthScale
+            let screenFrame = geometry.frame(in: .global)
 
-            ZStack {
-                content(width: cardWidth, height: geometry.size.height)
-
-                Color.black.opacity(isExpanded ? dimAmount : 0)
-                    .ignoresSafeArea()
-                    .allowsHitTesting(isExpanded)
-                    .onTapGesture { collapseCard() }
-
-                resetControl
-            }
-        }
-    }
-
-    private func content(width: CGFloat, height: CGFloat) -> some View {
-        VStack(spacing: 0) {
-            Spacer().frame(height: height * 0.18)
-            DigilockerHeader()
-            Spacer()
-
-            FaceIDUnlockButton(state: unlockState) {
-                unlockForPreview()
-            }
-            .opacity(isUnlockControlVisible ? 1 : 0)
-            .animation(.smooth(duration: 0.28), value: isUnlockControlVisible)
-            .animation(.smooth(duration: 0.2), value: unlockState)
-
-            Spacer()
-
-            Wallet(
-                width: width,
-                cardImageName: frontCardImageName,
-                backCardImageName: backCardImageName,
-                isExpanded: isExpanded
-            )
-            .contentShape(Rectangle())
-            .allowsHitTesting(unlockState == .unlocked)
-            .onTapGesture { toggleWallet() }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    private var resetControl: some View {
-        VStack {
-            HStack {
+            VStack(spacing: 0) {
+                Spacer().frame(height: geometry.size.height * headerTopSpaceRatio)
+                header
                 Spacer()
-                AnimationResetButton {
-                    resetAnimation()
+
+                if !bypassFaceID {
+                    FaceIDUnlockButton(
+                        state: unlockState,
+                        onAuthenticationStart: startFaceIDScan,
+                        onAuthenticationFailure: resetFaceIDScan
+                    ) {
+                        unlockAfterFaceID()
+                    }
                 }
+
+                Spacer()
+
+                Wallet(
+                    width: cardWidth,
+                    cardImageName: frontCardImageName,
+                    backCardImageName: backCardImageName,
+                    screenCenter: CGPoint(x: screenFrame.midX, y: screenFrame.midY)
+                )
             }
-            Spacer()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .padding(.top, 18)
-        .padding(.trailing, 18)
     }
 
-    private func unlockForPreview() {
+    private var header: some View {
+        VStack(spacing: 4) {
+            Text(title)
+                .font(.system(size: 24, weight: .regular, design: .serif))
+                .foregroundStyle(.black)
+                .minimumScaleFactor(0.8)
+                .lineLimit(1)
+
+            Text(subtitle)
+                .font(.system(size: 16, weight: .regular, design: .serif))
+                .foregroundStyle(.secondary)
+                .minimumScaleFactor(0.75)
+                .lineLimit(1)
+        }
+        .multilineTextAlignment(.center)
+        .padding(.horizontal, 24)
+    }
+
+    private func startFaceIDScan() {
         guard unlockState == .idle else { return }
 
         withAnimation(.smooth(duration: 0.2)) {
             unlockState = .scanning
         }
+    }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            withAnimation(.smooth(duration: 0.2)) {
-                unlockState = .unlocked
-            }
-
-            withAnimation(.spring(response: 0.62, dampingFraction: 0.74, blendDuration: 0.08)) {
-                isExpanded = true
-            }
-        }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
-            withAnimation(.smooth(duration: 0.28)) {
-                isUnlockControlVisible = false
-            }
+    private func unlockAfterFaceID() {
+        withAnimation(.smooth(duration: 0.2)) {
+            unlockState = .unlocked
         }
     }
 
-    private func toggleWallet() {
-        guard unlockState == .unlocked else { return }
+    private func resetFaceIDScan() {
+        guard unlockState != .unlocked else { return }
 
-        withAnimation(.spring(response: 0.62, dampingFraction: 0.74, blendDuration: 0.08)) {
-            isExpanded.toggle()
-        }
-    }
-
-    private func collapseCard() {
-        withAnimation(.spring(response: 0.62, dampingFraction: 0.74, blendDuration: 0.08)) {
-            isExpanded = false
-        }
-    }
-
-    private func resetAnimation() {
         withAnimation(.smooth(duration: 0.2)) {
             unlockState = .idle
-            isUnlockControlVisible = true
-            isExpanded = false
         }
     }
 }

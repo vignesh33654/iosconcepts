@@ -8,110 +8,219 @@
 import SwiftUI
 import UIKit
 
-struct WalletMotion {
-    var springResponse: Double = 0.45
-    var springDamping: Double = 0.69
-    var expandDelayStep: Double = 0.08
-    var collapseDelayStep: Double = 0.07
-    var lift: [CGFloat] = [-59, -28, 11]
-    var rest: [CGFloat] = [9, 10, 23]
-    var rotation: [Double] = [-1.4, 0.8, -0.4]
-    var scale: [CGFloat] = [1.025, 1.022, 1.012]
-    var widths: [CGFloat] = [0.86, 0.88, 0.9]
-    var punchScale: CGFloat = 0.86
-}
-
 struct Wallet: View {
     let width: CGFloat
-    var cardImageName: String = "Arav front"
-    var backCardImageName: String = "Arav back"
-    var isExpanded: Bool = false
-    var motion: WalletMotion = .init()
+    let cardImageName: String
+    let backCardImageName: String
+    let screenCenter: CGPoint?
 
+    init(
+        width: CGFloat,
+        cardImageName: String = "Arav front",
+        backCardImageName: String = "Arav back",
+        screenCenter: CGPoint? = nil
+    ) {
+        self.width = width
+        self.cardImageName = cardImageName
+        self.backCardImageName = backCardImageName
+        self.screenCenter = screenCenter
+    }
 
+    private let backgroundImageName = "Background"
+    private let pocketImageName = "Pocket 2"
+    private let secondCardFrontImageName = "Nandhi front"
+    private let secondCardBackImageName = "Nandhi back"
+
+    private let backgroundOffsetY: CGFloat = -6
+    private let pocketWidthExtra: CGFloat = 2
+    private let pocketOffsetY: CGFloat = 44
+    private let bottomPadding: CGFloat = 16
+    private let cardCornerRadius: CGFloat = 10
+    private let cardStrokeWidth: CGFloat = 2
+
+    private let springResponse = 0.45
+    private let springDamping = 0.69
+    private let springBlendDuration = 0.08
+    private let expandDelayStep = 0.08
+    private let collapseDelayStep = 0.07
+    private let autoExpandDelayNanoseconds: UInt64 = 500_000_000  // Auto-expand after 0.5s
+    private let punchDelayNanoseconds: UInt64 = 80_000_000
+    private let punchScale: CGFloat = 0.86
+
+    private let flipAngle = 360.0
+    private let flipDuration = 0.72
+    private let flipBounce = 0.02
+    private let selectedCardSpringResponse = 0.5
+    private let selectedCardSpringDamping = 0.8
+    private let selectedCardUp: CGFloat = -120
+
+    // Simple card configuration - no more array index errors!
+    private func cardConfig(for index: Int) -> (lift: CGFloat, rest: CGFloat, rotation: Double, scale: CGFloat, widthScale: CGFloat) {
+        switch index {
+        case 0: return (lift: -60, rest: 9, rotation: -1.4, scale: 1.025, widthScale: 0.86)
+        case 1: return (lift: -28, rest: 10, rotation: 0.8, scale: 1.022, widthScale: 0.88)
+        case 2: return (lift: 12, rest: 23, rotation: -0.4, scale: 1.012, widthScale: 0.9)
+        default: return (lift: 0, rest: 0, rotation: 0, scale: 1.0, widthScale: 1.0)
+        }
+    }
+
+    @State private var isExpanded = false
     @State private var displayScales: [CGFloat] = [1, 1, 1]
+    @State private var flippedCardIndex: Int? = nil
+    @State private var flipAngles: [Double] = [0, 0, 0]
+    @State private var cardBaseCenters: [Int: CGPoint] = [:]
 
     var body: some View {
         ZStack(alignment: .top) {
-            bundledImage(named: "Background")
+            image(named: backgroundImageName)
                 .frame(width: width)
-                .offset(y: -6)
+                .offset(y: backgroundOffsetY)
 
             cardStack
 
-            bundledImage(named: "Pocket 2")
-                .frame(width: width + 2)
-                .shadow(color: .black.opacity(0.4), radius: 4, x: 0, y: -8)
-                .offset(y: 44)
+            image(named: pocketImageName)
+                .frame(width: width + pocketWidthExtra)
+                .offset(y: pocketOffsetY)
                 .zIndex(10)
         }
-        .shadow(color: .black.opacity(0), radius: 28, x: 0, y: 0)
-        .padding(.bottom, 16)
-        .task(id: isExpanded) {
-            if isExpanded {
-                withAnimation(.none) {
-                    displayScales = Array(repeating: motion.punchScale, count: 3)
-                }
-                try? await Task.sleep(nanoseconds: 80_000_000)
-                guard !Task.isCancelled else { return }
-                withAnimation(.spring(response: motion.springResponse, dampingFraction: motion.springDamping)) {
-                    displayScales = motion.scale.map { $0 }
-                }
-            } else {
-                withAnimation(.spring(response: motion.springResponse, dampingFraction: motion.springDamping)) {
-                    displayScales = [1, 1, 1]
-                }
+        .contentShape(Rectangle())
+        .padding(.bottom, bottomPadding)
+        .task {
+            // Auto-expand on appear
+            try? await Task.sleep(nanoseconds: autoExpandDelayNanoseconds)
+            guard !Task.isCancelled else { return }
+            
+            withAnimation(walletSpring) {
+                isExpanded = true
             }
         }
+        .task(id: isExpanded, updateCardScales)
     }
 
     private var cardStack: some View {
         ZStack(alignment: .top) {
-            walletCard(index: 0, imageName: cardImageName)
-            walletCard(index: 1, imageName: "Nandhi front")
-            walletCard(index: 2, imageName: cardImageName)
+            walletCard(index: 0, frontImageName: cardImageName, backImageName: backCardImageName)
+            walletCard(index: 1, frontImageName: secondCardFrontImageName, backImageName: secondCardBackImageName)
+            walletCard(index: 2, frontImageName: cardImageName, backImageName: backCardImageName)
+        }
+        .onPreferenceChange(CardCenterPreferenceKey.self) { centers in
+            cardBaseCenters = centers
         }
     }
 
-    private func walletCard(index: Int, imageName: String) -> some View {
-        Card(
-            width: width * motion.widths[index],
-            centerX: 0,
-            expandedY: 0,
-            collapsedY: 0,
-            isExpanded: true,
-            frontImageName: imageName,
-            backImageName: backCardImageName,
-            onTap: {},
-            isPositioned: false,
-            isInteractive: false,
-            shadowOpacity: 0.2,
-            shadowRadius: 12,
-            shadowX: -2,
-            shadowY: 3
-        )
-        .offset(y: isExpanded ? motion.lift[index] : motion.rest[index])
-        .scaleEffect(displayScales[index])
-        .rotationEffect(.degrees(isExpanded ? motion.rotation[index] : 0))
-        .zIndex(Double(index + 1))
+    private func walletCard(index: Int, frontImageName: String, backImageName: String) -> some View {
+        let isFlipped = flippedCardIndex == index
+        let config = cardConfig(for: index)
+
+        return WalletCardView(
+            width: width * config.widthScale,
+            frontImageName: frontImageName,
+            backImageName: backImageName,
+            isExpanded: isExpanded,
+            isFlipped: isFlipped,
+            flipAngle: flipAngles[index],
+            displayScale: displayScales[index],
+            yOffset: isExpanded ? config.lift : config.rest,
+            rotation: isExpanded ? config.rotation : 0,
+            selectedOffset: centerOffset(for: index),
+            zIndex: isFlipped ? 100 : Double(index + 1),
+            cornerRadius: cardCornerRadius,
+            strokeWidth: cardStrokeWidth
+        ) {
+            toggleCardFlip(index: index)
+        }
+        .background {
+            GeometryReader { proxy in
+                let frame = proxy.frame(in: .global)
+                Color.clear.preference(
+                    key: CardCenterPreferenceKey.self,
+                    value: [index: CGPoint(x: frame.midX, y: frame.midY)]
+                )
+            }
+        }
         .animation(cardAnimation(index: index), value: isExpanded)
+        .animation(.smooth(duration: flipDuration, extraBounce: flipBounce), value: flipAngles[index])
+        .animation(
+            .spring(response: selectedCardSpringResponse, dampingFraction: selectedCardSpringDamping),
+            value: flippedCardIndex
+        )
+    }
+
+    private func updateCardScales() async {
+        if isExpanded {
+            withAnimation(.none) {
+                displayScales = Array(repeating: punchScale, count: 3)
+            }
+            try? await Task.sleep(nanoseconds: punchDelayNanoseconds)
+            guard !Task.isCancelled else { return }
+            withAnimation(walletSpring) {
+                displayScales = [
+                    cardConfig(for: 0).scale,
+                    cardConfig(for: 1).scale,
+                    cardConfig(for: 2).scale
+                ]
+            }
+        } else {
+            flipAngles = [0, 0, 0]
+            flippedCardIndex = nil
+
+            withAnimation(walletSpring) {
+                displayScales = [1, 1, 1]
+            }
+        }
+    }
+
+    private func toggleCardFlip(index: Int) {
+        guard isExpanded else { return }
+
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.75)) {
+            if flippedCardIndex == index {
+                flipAngles[index] = 0
+                flippedCardIndex = nil
+            } else {
+                if let previousIndex = flippedCardIndex {
+                    flipAngles[previousIndex] = 0
+                }
+
+                flippedCardIndex = index
+                flipAngles[index] = flipAngle
+            }
+        }
+    }
+
+    private func centerOffset(for index: Int) -> CGSize {
+        guard
+            flippedCardIndex == index,
+            let center = cardBaseCenters[index],
+            let screenCenter
+        else {
+            return .zero
+        }
+
+        return CGSize(
+            width: screenCenter.x - center.x,
+            height: screenCenter.y - center.y + selectedCardUp
+        )
     }
 
     private func cardAnimation(index: Int) -> Animation {
         let delay = isExpanded
-            ? Double(index) * motion.expandDelayStep
-            : Double(2 - index) * motion.collapseDelayStep
+            ? Double(index) * expandDelayStep
+            : Double(2 - index) * collapseDelayStep
 
-        return .spring(
-            response: motion.springResponse,
-            dampingFraction: motion.springDamping,
-            blendDuration: 0.08
+        return walletSpring.delay(delay)
+    }
+
+    private var walletSpring: Animation {
+        .spring(
+            response: springResponse,
+            dampingFraction: springDamping,
+            blendDuration: springBlendDuration
         )
-        .delay(delay)
     }
 
     @ViewBuilder
-    private func bundledImage(named name: String) -> some View {
+    private func image(named name: String) -> some View {
         if let image = UIImage(named: name) {
             Image(uiImage: image)
                 .resizable()
@@ -120,130 +229,112 @@ struct Wallet: View {
     }
 }
 
+private struct WalletCardView: View {
+    let width: CGFloat
+    let frontImageName: String
+    let backImageName: String
+    let isExpanded: Bool
+    let isFlipped: Bool
+    let flipAngle: Double
+    let displayScale: CGFloat
+    let yOffset: CGFloat
+    let rotation: Double
+    let selectedOffset: CGSize
+    let zIndex: Double
+    let cornerRadius: CGFloat
+    let strokeWidth: CGFloat
+    let onTap: () -> Void
+
+    var body: some View {
+        ZStack {
+            CardImageView(
+                imageName: frontImageName,
+                width: width,
+                cornerRadius: cornerRadius,
+                strokeWidth: strokeWidth
+            )
+            .opacity(isShowingBack ? 0 : 1)
+
+            CardImageView(
+                imageName: backImageName,
+                width: width,
+                cornerRadius: cornerRadius,
+                strokeWidth: strokeWidth
+            )
+            .rotation3DEffect(.degrees(180), axis: (x: 1, y: 0, z: 0))
+            .opacity(isShowingBack ? 1 : 0)
+        }
+        .contentShape(Rectangle())
+        .allowsHitTesting(isExpanded)
+        .rotation3DEffect(
+            .degrees(flipAngle),
+            axis: (x: 1, y: 0, z: 0),
+            perspective: 0.5
+        )
+        .offset(y: yOffset)
+        .scaleEffect(displayScale)
+        .rotationEffect(.degrees(isFlipped ? 0 : rotation))
+        .offset(x: selectedOffset.width, y: selectedOffset.height)
+        .zIndex(zIndex)
+        .onTapGesture(perform: onTap)
+    }
+
+    private var isShowingBack: Bool {
+        let normalizedAngle = flipAngle.truncatingRemainder(dividingBy: 360)
+        let positiveAngle = normalizedAngle < 0 ? normalizedAngle + 360 : normalizedAngle
+        return positiveAngle >= 90 && positiveAngle <= 270
+    }
+}
+
+private struct CardImageView: View {
+    let imageName: String
+    let width: CGFloat
+    let cornerRadius: CGFloat
+    let strokeWidth: CGFloat
+
+    var body: some View {
+        if let image = UIImage(named: imageName) {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+                .frame(width: width)
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [.white, Color(red: 0.82, green: 0.82, blue: 0.82)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: strokeWidth
+                        )
+                }
+        }
+    }
+}
+
+private struct CardCenterPreferenceKey: PreferenceKey {
+    static var defaultValue: [Int: CGPoint] = [:]
+
+    static func reduce(value: inout [Int: CGPoint], nextValue: () -> [Int: CGPoint]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, newValue in newValue })
+    }
+}
+
 #Preview {
-    @Previewable @State var m = WalletMotion()
-    @Previewable @State var expanded = false
     GeometryReader { geo in
-        VStack(spacing: 0) {
-            // ── top 50 %: wallet live preview ──────────────────────────
-            ZStack {
-                Wallet(width: min(geo.size.width - 48, 340), isExpanded: expanded, motion: m)
-                    .contentShape(Rectangle())
-                    .onTapGesture { expanded.toggle() }
-            }
-            .frame(height: geo.size.height * 0.5)
-            .frame(maxWidth: .infinity)
+        let screenFrame = geo.frame(in: .global)
 
-            Text("Tap wallet to open / close")
-                .font(.caption2).foregroundStyle(.tertiary)
-                .padding(.bottom, 4)
+        VStack {
+            Spacer()
 
-            Divider()
+            Wallet(
+                width: min(geo.size.width - 48, 340),
+                screenCenter: CGPoint(x: screenFrame.midX, y: screenFrame.midY)
+            )
 
-            // ── print bar ──────────────────────────────────────────────
-            Button {
-                print(motionSummary(m))
-            } label: {
-                Label("Print values to Xcode console", systemImage: "terminal")
-                    .font(.subheadline.weight(.medium))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(Color.blue.opacity(0.08))
-                    .foregroundStyle(.blue)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 6)
-
-            Divider()
-
-            // ── bottom 50 %: scrollable controls ───────────────────────
-            ScrollView(showsIndicators: true) {
-            VStack(alignment: .leading, spacing: 16) {
-
-                ctrlHeader("Animation feel")
-                ctrlRow("How fast it opens & closes", val: String(format: "%.2f", m.springResponse)) { Slider(value: $m.springResponse, in: 0.1...2.0) }
-                ctrlRow("How much it bounces", val: String(format: "%.2f", m.springDamping)) { Slider(value: $m.springDamping, in: 0.1...1.0) }
-                ctrlRow("Delay between cards opening", val: String(format: "%.2f", m.expandDelayStep)) { Slider(value: $m.expandDelayStep, in: 0...0.3) }
-                ctrlRow("Delay between cards closing", val: String(format: "%.2f", m.collapseDelayStep)) { Slider(value: $m.collapseDelayStep, in: 0...0.3) }
-                ctrlRow("Squeeze before pop (1.0 = off)", val: String(format: "%.2f", m.punchScale)) { Slider(value: $m.punchScale, in: 0.7...1.0) }
-
-                Divider()
-                ctrlHeader("How high each card floats when open  (− = higher)")
-                ctrlRow("Card 0", val: "\(Int(m.lift[0]))") { Slider(value: $m.lift[0], in: -200...100) }
-                ctrlRow("Card 1", val: "\(Int(m.lift[1]))") { Slider(value: $m.lift[1], in: -200...100) }
-                ctrlRow("Card 2", val: "\(Int(m.lift[2]))") { Slider(value: $m.lift[2], in: -200...100) }
-
-                Divider()
-                ctrlHeader("How far apart cards are when closed")
-                ctrlRow("Card 0", val: "\(Int(m.rest[0]))") { Slider(value: $m.rest[0], in: -50...50) }
-                ctrlRow("Card 1", val: "\(Int(m.rest[1]))") { Slider(value: $m.rest[1], in: -50...50) }
-                ctrlRow("Card 2", val: "\(Int(m.rest[2]))") { Slider(value: $m.rest[2], in: -50...50) }
-
-                Divider()
-                ctrlHeader("How much each card tilts when open")
-                ctrlRow("Card 0", val: String(format: "%.1f°", m.rotation[0])) { Slider(value: $m.rotation[0], in: -15...15) }
-                ctrlRow("Card 1", val: String(format: "%.1f°", m.rotation[1])) { Slider(value: $m.rotation[1], in: -15...15) }
-                ctrlRow("Card 2", val: String(format: "%.1f°", m.rotation[2])) { Slider(value: $m.rotation[2], in: -15...15) }
-
-                Divider()
-                ctrlHeader("How big each card grows when open")
-                ctrlRow("Card 0", val: String(format: "%.3f", m.scale[0])) { Slider(value: $m.scale[0], in: 0.9...1.2) }
-                ctrlRow("Card 1", val: String(format: "%.3f", m.scale[1])) { Slider(value: $m.scale[1], in: 0.9...1.2) }
-                ctrlRow("Card 2", val: String(format: "%.3f", m.scale[2])) { Slider(value: $m.scale[2], in: 0.9...1.2) }
-
-                Divider()
-                ctrlHeader("Width of each card (% of wallet)")
-                ctrlRow("Card 0", val: "\(Int(m.widths[0] * 100))%") { Slider(value: $m.widths[0], in: 0.6...1.0) }
-                ctrlRow("Card 1", val: "\(Int(m.widths[1] * 100))%") { Slider(value: $m.widths[1], in: 0.6...1.0) }
-                ctrlRow("Card 2", val: "\(Int(m.widths[2] * 100))%") { Slider(value: $m.widths[2], in: 0.6...1.0) }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-        }
-        .frame(height: geo.size.height * 0.5)
+            Spacer()
         }
     }
-}
-
-private func ctrlHeader(_ title: String) -> some View {
-    Text(title)
-        .font(.headline)
-        .foregroundStyle(.primary)
-        .padding(.top, 10)
-}
-
-private func ctrlRow<S: View>(_ label: String, val: String, @ViewBuilder slider: () -> S) -> some View {
-    HStack(alignment: .center, spacing: 12) {
-        Text(label)
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-            .frame(width: 110, alignment: .leading)
-            .fixedSize(horizontal: false, vertical: true)
-        slider()
-        Text(val)
-            .font(.subheadline.monospacedDigit())
-            .foregroundStyle(.secondary)
-            .frame(width: 42, alignment: .trailing)
-    }
-}
-
-private func motionSummary(_ m: WalletMotion) -> String {
-    func f2(_ v: Double) -> String { String(format: "%.2f", v) }
-    func f3(_ v: Double) -> String { String(format: "%.3f", v) }
-    func ints(_ a: [CGFloat]) -> String { a.map { String(Int($0)) }.joined(separator: ", ") }
-    func f2s(_ a: [Double]) -> String { a.map { f2($0) }.joined(separator: ", ") }
-    func f3s(_ a: [CGFloat]) -> String { a.map { f3(Double($0)) }.joined(separator: ", ") }
-    return """
-    springResponse: \(f2(m.springResponse))
-    springDamping: \(f2(m.springDamping))
-    expandDelayStep: \(f2(m.expandDelayStep))
-    collapseDelayStep: \(f2(m.collapseDelayStep))
-    punchScale: \(f2(Double(m.punchScale)))
-    lift: [\(ints(m.lift))]
-    rest: [\(ints(m.rest))]
-    rotation: [\(f2s(m.rotation))]
-    scale: [\(f3s(m.scale))]
-    widths: [\(f3s(m.widths))]
-    """
 }
