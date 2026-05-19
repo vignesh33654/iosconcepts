@@ -9,6 +9,8 @@ import SwiftUI
 import UIKit
 
 struct Wallet: View {
+    private typealias Config = WalletConfig
+
     let width: CGFloat
     let cardImageName: String
     let backCardImageName: String
@@ -26,60 +28,21 @@ struct Wallet: View {
         self.screenCenter = screenCenter
     }
 
-    private let title = "Welcome to digilocker"
-    private let subtitle = "Use your Face ID to check out all your IDs"
-    private let headerTopSpacing: CGFloat = 40
-
-    private let backgroundImageName = "Background"
-    private let pocketImageName = "Pocket 2"
-    private let secondCardFrontImageName = "Nandhi front"
-    private let secondCardBackImageName = "Nandhi back"
-    
-    // Wallet and card
-
-    private let backgroundOffsetY: CGFloat = -6
-    private let pocketWidthExtra: CGFloat = 2
-    private let pocketOffsetY: CGFloat = 44
-    private let bottomPadding: CGFloat = 16
-    private let cardCornerRadius: CGFloat = 10
-    private let cardStrokeWidth: CGFloat = 2
-
-
-    private let springResponse = 0.45
-    private let springDamping = 0.69
-    private let springBlendDuration = 0.08
-    private let expandDelayStep = 0.08
-    private let collapseDelayStep = 0.07
-    private let autoExpandDelayNanoseconds: UInt64 = 500_000_000  // Auto-expand after 0.5s
-    private let punchDelayNanoseconds: UInt64 = 80_000_000
-    private let punchScale: CGFloat = 0.86
-
-    private let flipAngle = 360.0
-    private let flipDuration = 0.72
-    private let flipBounce = 0.02
-    private let selectedCardSpringResponse = 0.5
-    private let selectedCardSpringDamping = 0.8
-    private let selectedCardUp: CGFloat = -80
-
-    // Simple card configuration - no more array index errors!
-    private func cardConfig(for index: Int) -> (lift: CGFloat, rest: CGFloat, rotation: Double, scale: CGFloat, widthScale: CGFloat) {
-        switch index {
-        case 0: return (lift: -60, rest: 9, rotation: 0, scale: 1.025, widthScale: 0.86)
-        case 1: return (lift: -28, rest: 10, rotation:0 , scale: 1.022, widthScale: 0.88)
-        case 2: return (lift: 12, rest: 23, rotation: 0, scale: 1.012, widthScale: 0.9)
-        default: return (lift: 0, rest: 0, rotation: 0, scale: 1.0, widthScale: 1.0)
-        }
-    }
-
     @State private var isExpanded = false
-    @State private var displayScales: [CGFloat] = [1, 1, 1]
+    @State private var displayScales: [CGFloat] = WalletLayoutCalculator.repeatedScales(
+        Config.defaultInitialCardScale,
+        count: Config.defaultCardCount
+    )
     @State private var flippedCardIndex: Int? = nil
-    @State private var flipAngles: [Double] = [0, 0, 0]
+    @State private var flipAngles: [Double] = WalletLayoutCalculator.repeatedAngles(
+        Config.defaultResetFlipAngle,
+        count: Config.defaultCardCount
+    )
     @State private var cardBaseCenters: [Int: CGPoint] = [:]
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer().frame(height: headerTopSpacing)
+        VStack(spacing: Config.mainStackSpacing) {
+            Spacer().frame(height: Config.headerTopSpacing)
             header
             Spacer()
             walletContent
@@ -88,41 +51,41 @@ struct Wallet: View {
     }
 
     private var header: some View {
-        VStack(spacing: 4) {
-            Text(title)
-                .font(.system(size: 24, weight: .regular, design: .serif))
+        VStack(spacing: Config.headerSpacing) {
+            Text(Config.title)
+                .font(.system(size: Config.titleFontSize, weight: .regular, design: .serif))
                 .foregroundStyle(.black)
-                .minimumScaleFactor(0.8)
-                .lineLimit(1)
+                .minimumScaleFactor(Config.titleMinimumScale)
+                .lineLimit(Config.headerLineLimit)
 
-            Text(subtitle)
-                .font(.system(size: 16, weight: .regular, design: .serif))
+            Text(Config.subtitle)
+                .font(.system(size: Config.subtitleFontSize, weight: .regular, design: .serif))
                 .foregroundStyle(.secondary)
-                .minimumScaleFactor(0.75)
-                .lineLimit(1)
+                .minimumScaleFactor(Config.subtitleMinimumScale)
+                .lineLimit(Config.headerLineLimit)
         }
         .multilineTextAlignment(.center)
-        .padding(.horizontal, 24)
+        .padding(.horizontal, Config.headerHorizontalPadding)
     }
 
     private var walletContent: some View {
         ZStack(alignment: .top) {
-            image(named: backgroundImageName)
+            image(named: Config.backgroundImageName)
                 .frame(width: width)
-                .offset(y: backgroundOffsetY)
+                .offset(y: Config.backgroundOffsetY)
 
             cardStack
 
-            image(named: pocketImageName)
-                .frame(width: width + pocketWidthExtra)
-                .offset(y: pocketOffsetY)
-                .zIndex(10)
+            image(named: Config.pocketImageName)
+                .frame(width: width + Config.pocketWidthExtra)
+                .offset(y: Config.pocketOffsetY)
+                .zIndex(Config.pocketZIndex)
         }
         .contentShape(Rectangle())
-        .padding(.bottom, bottomPadding)
+        .padding(.bottom, Config.bottomPadding)
         .task {
             // Auto-expand on appear
-            try? await Task.sleep(nanoseconds: autoExpandDelayNanoseconds)
+            try? await Task.sleep(nanoseconds: Config.autoExpandDelayNanoseconds)
             guard !Task.isCancelled else { return }
 
             withAnimation(walletSpring) {
@@ -134,9 +97,13 @@ struct Wallet: View {
 
     private var cardStack: some View {
         ZStack(alignment: .top) {
-            walletCard(index: 0, frontImageName: cardImageName, backImageName: backCardImageName)
-            walletCard(index: 1, frontImageName: secondCardFrontImageName, backImageName: secondCardBackImageName)
-            walletCard(index: 2, frontImageName: cardImageName, backImageName: backCardImageName)
+            ForEach(Config.cardLayouts.indices, id: \.self) { index in
+                walletCard(
+                    index: index,
+                    frontImageName: frontImageName(for: index),
+                    backImageName: backImageName(for: index)
+                )
+            }
         }
         .onPreferenceChange(CardCenterPreferenceKey.self) { centers in
             cardBaseCenters = centers
@@ -145,22 +112,30 @@ struct Wallet: View {
 
     private func walletCard(index: Int, frontImageName: String, backImageName: String) -> some View {
         let isFlipped = flippedCardIndex == index
-        let config = cardConfig(for: index)
+        let layout = Config.cardLayouts[index]
 
         return WalletCardView(
-            width: width * config.widthScale,
+            width: width * layout.widthScale,
             frontImageName: frontImageName,
             backImageName: backImageName,
             isExpanded: isExpanded,
             isFlipped: isFlipped,
             flipAngle: flipAngles[index],
             displayScale: displayScales[index],
-            yOffset: isExpanded ? config.lift : config.rest,
-            rotation: isExpanded ? config.rotation : 0,
+            yOffset: isExpanded ? layout.lift : layout.rest,
+            rotation: isExpanded ? layout.rotation : Config.collapsedRotation,
             selectedOffset: centerOffset(for: index),
-            zIndex: isFlipped ? 100 : Double(index + 1),
-            cornerRadius: cardCornerRadius,
-            strokeWidth: cardStrokeWidth
+            zIndex: isFlipped ? Config.selectedCardZIndex : Double(index + Config.baseCardZIndexOffset),
+            cornerRadius: Config.cardCornerRadius,
+            strokeWidth: Config.cardStrokeWidth,
+            backFaceRotationAngle: Config.backFaceRotationAngle,
+            flipPerspective: Config.flipPerspective,
+            backVisibleStartAngle: Config.backVisibleStartAngle,
+            backVisibleEndAngle: Config.backVisibleEndAngle,
+            fullRotationAngle: Config.fullRotationAngle,
+            hiddenOpacity: Config.hiddenOpacity,
+            visibleOpacity: Config.visibleOpacity,
+            borderEndColor: Config.cardBorderEndColor
         ) {
             toggleCardFlip(index: index)
         }
@@ -174,9 +149,9 @@ struct Wallet: View {
             }
         }
         .animation(cardAnimation(index: index), value: isExpanded)
-        .animation(.smooth(duration: flipDuration, extraBounce: flipBounce), value: flipAngles[index])
+        .animation(.smooth(duration: Config.flipDuration, extraBounce: Config.flipBounce), value: flipAngles[index])
         .animation(
-            .spring(response: selectedCardSpringResponse, dampingFraction: selectedCardSpringDamping),
+            .spring(response: Config.selectedCardSpringResponse, dampingFraction: Config.selectedCardSpringDamping),
             value: flippedCardIndex
         )
     }
@@ -184,23 +159,19 @@ struct Wallet: View {
     private func updateCardScales() async {
         if isExpanded {
             withAnimation(.none) {
-                displayScales = Array(repeating: punchScale, count: 3)
+                displayScales = WalletLayoutCalculator.repeatedScales(Config.punchScale, count: Config.defaultCardCount)
             }
-            try? await Task.sleep(nanoseconds: punchDelayNanoseconds)
+            try? await Task.sleep(nanoseconds: Config.punchDelayNanoseconds)
             guard !Task.isCancelled else { return }
             withAnimation(walletSpring) {
-                displayScales = [
-                    cardConfig(for: 0).scale,
-                    cardConfig(for: 1).scale,
-                    cardConfig(for: 2).scale
-                ]
+                displayScales = WalletLayoutCalculator.scales(from: Config.cardLayouts)
             }
         } else {
-            flipAngles = [0, 0, 0]
+            flipAngles = WalletLayoutCalculator.repeatedAngles(Config.defaultResetFlipAngle, count: Config.defaultCardCount)
             flippedCardIndex = nil
 
             withAnimation(walletSpring) {
-                displayScales = [1, 1, 1]
+                displayScales = WalletLayoutCalculator.repeatedScales(Config.defaultInitialCardScale, count: Config.defaultCardCount)
             }
         }
     }
@@ -208,49 +179,65 @@ struct Wallet: View {
     private func toggleCardFlip(index: Int) {
         guard isExpanded else { return }
 
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.75)) {
+        withAnimation(.spring(response: Config.tapSpringResponse, dampingFraction: Config.tapSpringDamping)) {
             if flippedCardIndex == index {
-                flipAngles[index] = 0
+                flipAngles[index] = Config.defaultResetFlipAngle
                 flippedCardIndex = nil
             } else {
                 if let previousIndex = flippedCardIndex {
-                    flipAngles[previousIndex] = 0
+                    flipAngles[previousIndex] = Config.defaultResetFlipAngle
                 }
 
                 flippedCardIndex = index
-                flipAngles[index] = flipAngle
+                flipAngles[index] = Config.flipAngle
             }
         }
     }
 
-    private func centerOffset(for index: Int) -> CGSize {
-        guard
-            flippedCardIndex == index,
-            let center = cardBaseCenters[index],
-            let screenCenter
-        else {
-            return .zero
-        }
+    private func frontImageName(for index: Int) -> String {
+        WalletLayoutCalculator.imageName(
+            for: index,
+            primaryName: cardImageName,
+            secondaryName: Config.secondCardFrontImageName,
+            secondaryIndex: Config.secondCardIndex
+        )
+    }
 
-        return CGSize(
-            width: screenCenter.x - center.x,
-            height: screenCenter.y - center.y + selectedCardUp
+    private func backImageName(for index: Int) -> String {
+        WalletLayoutCalculator.imageName(
+            for: index,
+            primaryName: backCardImageName,
+            secondaryName: Config.secondCardBackImageName,
+            secondaryIndex: Config.secondCardIndex
+        )
+    }
+
+    private func centerOffset(for index: Int) -> CGSize {
+        WalletLayoutCalculator.selectedOffset(
+            flippedCardIndex: flippedCardIndex,
+            index: index,
+            cardCenter: cardBaseCenters[index],
+            screenCenter: screenCenter,
+            selectedCardUp: Config.selectedCardUp
         )
     }
 
     private func cardAnimation(index: Int) -> Animation {
-        let delay = isExpanded
-            ? Double(index) * expandDelayStep
-            : Double(2 - index) * collapseDelayStep
-
-        return walletSpring.delay(delay)
+        WalletLayoutCalculator.cardAnimation(
+            index: index,
+            cardCount: Config.defaultCardCount,
+            isExpanded: isExpanded,
+            expandDelayStep: Config.expandDelayStep,
+            collapseDelayStep: Config.collapseDelayStep,
+            spring: walletSpring
+        )
     }
 
     private var walletSpring: Animation {
         .spring(
-            response: springResponse,
-            dampingFraction: springDamping,
-            blendDuration: springBlendDuration
+            response: Config.springResponse,
+            dampingFraction: Config.springDamping,
+            blendDuration: Config.springBlendDuration
         )
     }
 
@@ -278,6 +265,14 @@ private struct WalletCardView: View {
     let zIndex: Double
     let cornerRadius: CGFloat
     let strokeWidth: CGFloat
+    let backFaceRotationAngle: Double
+    let flipPerspective: CGFloat
+    let backVisibleStartAngle: Double
+    let backVisibleEndAngle: Double
+    let fullRotationAngle: Double
+    let hiddenOpacity: Double
+    let visibleOpacity: Double
+    let borderEndColor: Color
     let onTap: () -> Void
 
     var body: some View {
@@ -286,25 +281,27 @@ private struct WalletCardView: View {
                 imageName: frontImageName,
                 width: width,
                 cornerRadius: cornerRadius,
-                strokeWidth: strokeWidth
+                strokeWidth: strokeWidth,
+                borderEndColor: borderEndColor
             )
-            .opacity(isShowingBack ? 0 : 1)
+            .opacity(isShowingBack ? hiddenOpacity : visibleOpacity)
 
             CardImageView(
                 imageName: backImageName,
                 width: width,
                 cornerRadius: cornerRadius,
-                strokeWidth: strokeWidth
+                strokeWidth: strokeWidth,
+                borderEndColor: borderEndColor
             )
-            .rotation3DEffect(.degrees(180), axis: (x: 1, y: 0, z: 0))
-            .opacity(isShowingBack ? 1 : 0)
+            .rotation3DEffect(.degrees(backFaceRotationAngle), axis: (x: 1, y: 0, z: 0))
+            .opacity(isShowingBack ? visibleOpacity : hiddenOpacity)
         }
         .contentShape(Rectangle())
         .allowsHitTesting(isExpanded)
         .rotation3DEffect(
             .degrees(flipAngle),
             axis: (x: 1, y: 0, z: 0),
-            perspective: 0.5
+            perspective: flipPerspective
         )
         .offset(y: yOffset)
         .scaleEffect(displayScale)
@@ -315,9 +312,12 @@ private struct WalletCardView: View {
     }
 
     private var isShowingBack: Bool {
-        let normalizedAngle = flipAngle.truncatingRemainder(dividingBy: 360)
-        let positiveAngle = normalizedAngle < 0 ? normalizedAngle + 360 : normalizedAngle
-        return positiveAngle >= 90 && positiveAngle <= 270
+        WalletLayoutCalculator.isShowingBack(
+            flipAngle: flipAngle,
+            fullRotationAngle: fullRotationAngle,
+            backVisibleStartAngle: backVisibleStartAngle,
+            backVisibleEndAngle: backVisibleEndAngle
+        )
     }
 }
 
@@ -326,6 +326,7 @@ private struct CardImageView: View {
     let width: CGFloat
     let cornerRadius: CGFloat
     let strokeWidth: CGFloat
+    let borderEndColor: Color
 
     var body: some View {
         if let image = UIImage(named: imageName) {
@@ -338,7 +339,7 @@ private struct CardImageView: View {
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                         .strokeBorder(
                             LinearGradient(
-                                colors: [.white, Color(red: 0.82, green: 0.82, blue: 0.82)],
+                                colors: [.white, borderEndColor],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
@@ -365,7 +366,7 @@ private struct CardCenterPreferenceKey: PreferenceKey {
             Spacer()
 
             Wallet(
-                width: min(geo.size.width - 48, 340),
+                width: min(geo.size.width - WalletConfig.previewHorizontalPadding, WalletConfig.previewMaxWalletWidth),
                 screenCenter: CGPoint(x: screenFrame.midX, y: screenFrame.midY)
             )
 

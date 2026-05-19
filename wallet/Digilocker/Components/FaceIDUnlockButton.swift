@@ -8,12 +8,6 @@
 import LocalAuthentication
 import SwiftUI
 
-enum FaceIDUnlockState {
-    case idle
-    case scanning
-    case unlocked
-}
-
 struct FaceIDUnlockButton: View {
     let state: FaceIDUnlockState
     let onAuthenticationStart: () -> Void
