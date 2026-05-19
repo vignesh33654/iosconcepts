@@ -65,6 +65,7 @@ struct WalletCardView: View {
             )
             .rotation3DEffect(.degrees(backFaceRotationAngle), axis: (x: 0, y: 1, z: 0))
             .opacity(isShowingBack ? visibleOpacity : hiddenOpacity)
+
         }
         .compositingGroup()
         .rotation3DEffect(
@@ -175,6 +176,7 @@ struct WalletCardView: View {
             gyroRollAngle = Config.gyroscopeNeutralAngle
         }
     }
+
 
     private static func clamped(_ value: Double, limit: Double) -> Double {
         min(max(value, -limit), limit)

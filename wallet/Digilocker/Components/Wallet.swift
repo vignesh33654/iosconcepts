@@ -29,42 +29,69 @@ struct Wallet: View {
     }
 
     @State private var isExpanded = false
-    @State private var displayScales: [CGFloat] = WalletLayoutCalculator.repeatedScales(
-        Config.defaultInitialCardScale,
-        count: Config.defaultCardCount
-    )
+
+    @State private var displayScales: [CGFloat] =
+        WalletLayoutCalculator.repeatedScales(
+            Config.defaultInitialCardScale,
+            count: Config.defaultCardCount
+        )
+
     @State private var selectedCardIndex: Int? = nil
-    @State private var flipAngles: [Double] = WalletLayoutCalculator.repeatedAngles(
-        Config.defaultResetFlipAngle,
-        count: Config.defaultCardCount
-    )
-    @State private var openFlipAngles: [Double] = WalletLayoutCalculator.repeatedAngles(
-        Config.defaultResetFlipAngle,
-        count: Config.defaultCardCount
-    )
+
+    @State private var flipAngles: [Double] =
+        WalletLayoutCalculator.repeatedAngles(
+            Config.defaultResetFlipAngle,
+            count: Config.defaultCardCount
+        )
+
+    @State private var openFlipAngles: [Double] =
+        WalletLayoutCalculator.repeatedAngles(
+            Config.defaultResetFlipAngle,
+            count: Config.defaultCardCount
+        )
+
     @State private var cardBaseCenters: [Int: CGPoint] = [:]
-    @State private var cardOrder: [Int] = Array(0..<WalletConfig.defaultCardCount)
 
     var body: some View {
         VStack(spacing: Config.mainStackSpacing) {
-            Spacer().frame(height: Config.headerTopSpacing)
-            header
+
             Spacer()
+                .frame(height: Config.headerTopSpacing)
+
+            header
+
+            Spacer()
+
             walletContent
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    // MARK: - Header
+
     private var header: some View {
         VStack(spacing: Config.headerSpacing) {
+
             Text(Config.title)
-                .font(.system(size: Config.titleFontSize, weight: .regular, design: .serif))
+                .font(
+                    .system(
+                        size: Config.titleFontSize,
+                        weight: .regular,
+                        design: .serif
+                    )
+                )
                 .foregroundStyle(.black)
                 .minimumScaleFactor(Config.titleMinimumScale)
                 .lineLimit(Config.headerLineLimit)
 
             Text(Config.subtitle)
-                .font(.system(size: Config.subtitleFontSize, weight: .regular, design: .serif))
+                .font(
+                    .system(
+                        size: Config.subtitleFontSize,
+                        weight: .regular,
+                        design: .serif
+                    )
+                )
                 .foregroundStyle(.secondary)
                 .minimumScaleFactor(Config.subtitleMinimumScale)
                 .lineLimit(Config.headerLineLimit)
@@ -73,8 +100,11 @@ struct Wallet: View {
         .padding(.horizontal, Config.headerHorizontalPadding)
     }
 
+    // MARK: - Wallet Content
+
     private var walletContent: some View {
         ZStack(alignment: .top) {
+
             image(named: Config.backgroundImageName)
                 .frame(width: width)
                 .offset(y: Config.backgroundOffsetY)
@@ -89,24 +119,36 @@ struct Wallet: View {
                 .allowsHitTesting(false)
         }
         .padding(.bottom, Config.bottomPadding)
+
         .task {
-            // Auto-expand on appear
-            try? await Task.sleep(nanoseconds: Config.autoExpandDelayNanoseconds)
+
+            try? await Task.sleep(
+                nanoseconds: Config.autoExpandDelayNanoseconds
+            )
+
             guard !Task.isCancelled else { return }
 
             withAnimation(walletSpring) {
                 isExpanded = true
             }
         }
+
         .task(id: isExpanded, updateCardScales)
     }
 
+    // MARK: - Card Stack
+
     private var cardStack: some View {
         ZStack(alignment: .top) {
-            ForEach(Array(cardOrder.enumerated()), id: \.element) { slot, index in
+
+            ForEach(
+                0..<Config.defaultCardCount,
+                id: \.self
+            ) { index in
+
                 walletCard(
                     index: index,
-                    slot: slot,
+                    slot: index,
                     frontImageName: frontImageName(for: index),
                     backImageName: backImageName(for: index)
                 )
@@ -117,135 +159,277 @@ struct Wallet: View {
         }
     }
 
-    private func walletCard(index: Int, slot: Int, frontImageName: String, backImageName: String) -> some View {
+    // MARK: - Wallet Card
+
+    private func walletCard(
+        index: Int,
+        slot: Int,
+        frontImageName: String,
+        backImageName: String
+    ) -> some View {
+
         let isSelected = selectedCardIndex == index
-        let layout = Config.cardLayouts[slot]  // slot drives visual position, not card index
+        let layout = Config.cardLayouts[slot]
+
+        let flipAnimation: Animation? = isSelected
+            ? .smooth(
+                duration: Config.flipDuration,
+                extraBounce: Config.flipBounce
+            )
+            : nil
 
         return WalletCardView(
             width: width * layout.widthScale,
+
             frontImageName: frontImageName,
             backImageName: backImageName,
+
             isExpanded: isExpanded,
             isSelected: isSelected,
+
             flipAngle: flipAngles[index],
             openFlipAngle: openFlipAngles[index],
+
             displayScale: displayScales[slot],
-            yOffset: isExpanded ? layout.lift : layout.rest,
-            rotation: isExpanded ? layout.rotation : Config.collapsedRotation,
-            selectedOffset: centerOffset(for: index),
-            zIndex: isSelected ? Config.selectedCardZIndex : Double(slot + Config.baseCardZIndexOffset),
+
+            yOffset: isExpanded
+                ? layout.lift
+                : layout.rest,
+
+            rotation: isExpanded
+                ? layout.rotation
+                : Config.collapsedRotation,
+
+            selectedOffset: isSelected
+                ? centerOffset(for: index)
+                : .zero,
+
+            zIndex: isSelected
+                ? 1000
+                : Double(slot),
+
             cornerRadius: Config.cardCornerRadius,
             strokeWidth: Config.cardStrokeWidth,
+
             backFaceRotationAngle: Config.backFaceRotationAngle,
             flipPerspective: Config.flipPerspective,
+
             backVisibleStartAngle: Config.backVisibleStartAngle,
             backVisibleEndAngle: Config.backVisibleEndAngle,
+
             fullRotationAngle: Config.fullRotationAngle,
+
             hiddenOpacity: Config.hiddenOpacity,
             visibleOpacity: Config.visibleOpacity,
+
             borderEndColor: Config.cardBorderEndColor,
+
             swipeMinimumDistance: Config.cardSwipeMinimumDistance
+
         ) {
+
             selectCard(index: index)
+
         } onSwipe: { horizontalDistance in
-            flipSelectedCard(index: index, horizontalDistance: horizontalDistance)
+
+            flipSelectedCard(
+                index: index,
+                horizontalDistance: horizontalDistance
+            )
         }
+
         .background {
+
             GeometryReader { proxy in
+
                 let frame = proxy.frame(in: .global)
+
                 Color.clear.preference(
                     key: CardCenterPreferenceKey.self,
-                    value: [index: CGPoint(x: frame.midX, y: frame.midY)]
+                    value: [
+                        index: CGPoint(
+                            x: frame.midX,
+                            y: frame.midY
+                        )
+                    ]
                 )
             }
         }
-        .animation(cardAnimation(index: slot), value: isExpanded)
-        .animation(.smooth(duration: Config.flipDuration, extraBounce: Config.flipBounce), value: flipAngles[index])
-        .animation(.smooth(duration: Config.flipDuration, extraBounce: Config.flipBounce), value: openFlipAngles[index])
+
         .animation(
-            .spring(response: Config.selectedCardSpringResponse, dampingFraction: Config.selectedCardSpringDamping),
+            cardAnimation(index: slot),
+            value: isExpanded
+        )
+
+        .animation(
+            flipAnimation,
+            value: flipAngles[index]
+        )
+
+        .animation(
+            flipAnimation,
+            value: openFlipAngles[index]
+        )
+
+        .animation(
+            .spring(
+                response: Config.selectedCardSpringResponse,
+                dampingFraction: Config.selectedCardSpringDamping
+            ),
             value: selectedCardIndex
         )
     }
 
+    // MARK: - Update Scales
+
     private func updateCardScales() async {
+
         if isExpanded {
+
             withAnimation(.none) {
-                displayScales = WalletLayoutCalculator.repeatedScales(Config.punchScale, count: Config.defaultCardCount)
+
+                displayScales =
+                    WalletLayoutCalculator.repeatedScales(
+                        Config.punchScale,
+                        count: Config.defaultCardCount
+                    )
             }
-            try? await Task.sleep(nanoseconds: Config.punchDelayNanoseconds)
+
+            try? await Task.sleep(
+                nanoseconds: Config.punchDelayNanoseconds
+            )
+
             guard !Task.isCancelled else { return }
+
             withAnimation(walletSpring) {
-                displayScales = WalletLayoutCalculator.scales(from: Config.cardLayouts)
+
+                displayScales =
+                    WalletLayoutCalculator.scales(
+                        from: Config.cardLayouts
+                    )
             }
+
         } else {
-            flipAngles = WalletLayoutCalculator.repeatedAngles(Config.defaultResetFlipAngle, count: Config.defaultCardCount)
-            openFlipAngles = WalletLayoutCalculator.repeatedAngles(Config.defaultResetFlipAngle, count: Config.defaultCardCount)
+
+            flipAngles =
+                WalletLayoutCalculator.repeatedAngles(
+                    Config.defaultResetFlipAngle,
+                    count: Config.defaultCardCount
+                )
+
+            openFlipAngles =
+                WalletLayoutCalculator.repeatedAngles(
+                    Config.defaultResetFlipAngle,
+                    count: Config.defaultCardCount
+                )
+
             selectedCardIndex = nil
+
             withAnimation(walletSpring) {
-                displayScales = WalletLayoutCalculator.repeatedScales(Config.defaultInitialCardScale, count: Config.defaultCardCount)
+
+                displayScales =
+                    WalletLayoutCalculator.repeatedScales(
+                        Config.defaultInitialCardScale,
+                        count: Config.defaultCardCount
+                    )
             }
         }
     }
 
+    // MARK: - Select Card
+
     private func selectCard(index: Int) {
+
         guard isExpanded else { return }
 
         let spring = Animation.spring(
-            response: Config.selectedCardSpringResponse,
-            dampingFraction: Config.selectedCardSpringDamping
+            response: 0.45,
+            dampingFraction: 0.88
         )
 
+        // CLOSE CARD
+
         if selectedCardIndex == index {
-            resetCardFlipWithoutAnimation(index: index)
-            withAnimation(spring) {
-                closeSelectedCard(index: index)
+
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+
+            withTransaction(transaction) {
+
+                flipAngles[index] = 0
+                openFlipAngles[index] = 0
             }
-        } else {
-            if let previousIndex = selectedCardIndex {
-                resetCardFlipWithoutAnimation(index: previousIndex)
-            }
-            resetCardFlipWithoutAnimation(index: index)
 
             withAnimation(spring) {
+                selectedCardIndex = nil
+            }
+
+        } else {
+
+            // RESET PREVIOUS CARD
+
+            if let previousIndex = selectedCardIndex {
+
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+
+                withTransaction(transaction) {
+
+                    flipAngles[previousIndex] = 0
+                    openFlipAngles[previousIndex] = 0
+                }
+            }
+
+            // OPEN NEW CARD
+
+            withAnimation(spring) {
+
                 selectedCardIndex = index
                 openFlipAngles[index] = Config.openFlipAngle
             }
         }
     }
 
-    private func flipSelectedCard(index: Int, horizontalDistance: CGFloat) {
-        guard isExpanded, selectedCardIndex == index else { return }
+    // MARK: - Flip Card
 
-        withAnimation(.spring(response: Config.swipeSpringResponse, dampingFraction: Config.swipeSpringDamping)) {
+    private func flipSelectedCard(
+        index: Int,
+        horizontalDistance: CGFloat
+    ) {
+
+        guard
+            isExpanded,
+            selectedCardIndex == index
+        else {
+            return
+        }
+
+        withAnimation(
+            .spring(
+                response: Config.swipeSpringResponse,
+                dampingFraction: Config.swipeSpringDamping
+            )
+        ) {
+
             if isShowingBack(index: index) {
-                flipAngles[index] = Config.defaultResetFlipAngle
+
+                flipAngles[index] =
+                    Config.defaultResetFlipAngle
+
             } else {
-                flipAngles[index] = horizontalDistance < 0 ? -Config.flipAngle : Config.flipAngle
+
+                flipAngles[index] =
+                    horizontalDistance < 0
+                    ? -Config.flipAngle
+                    : Config.flipAngle
             }
         }
     }
 
-    private func closeSelectedCard(index: Int) {
-        selectedCardIndex = nil
-        // Move closed card to last slot (bottom of stack)
-        var order = cardOrder
-        order.removeAll { $0 == index }
-        order.insert(index, at: 0)
-        withAnimation(walletSpring) { cardOrder = order }
-    }
-
-    private func resetCardFlipWithoutAnimation(index: Int) {
-        var transaction = Transaction()
-        transaction.animation = nil
-
-        withTransaction(transaction) {
-            flipAngles[index] = Config.defaultResetFlipAngle
-            openFlipAngles[index] = Config.defaultResetFlipAngle
-        }
-    }
+    // MARK: - Back Visibility
 
     private func isShowingBack(index: Int) -> Bool {
+
         WalletLayoutCalculator.isShowingBack(
             flipAngle: flipAngles[index],
             fullRotationAngle: Config.fullRotationAngle,
@@ -254,7 +438,10 @@ struct Wallet: View {
         )
     }
 
+    // MARK: - Images
+
     private func frontImageName(for index: Int) -> String {
+
         WalletLayoutCalculator.imageName(
             for: index,
             primaryName: cardImageName,
@@ -264,6 +451,7 @@ struct Wallet: View {
     }
 
     private func backImageName(for index: Int) -> String {
+
         WalletLayoutCalculator.imageName(
             for: index,
             primaryName: backCardImageName,
@@ -272,7 +460,10 @@ struct Wallet: View {
         )
     }
 
+    // MARK: - Offset
+
     private func centerOffset(for index: Int) -> CGSize {
+
         WalletLayoutCalculator.selectedOffset(
             selectedCardIndex: selectedCardIndex,
             index: index,
@@ -282,7 +473,10 @@ struct Wallet: View {
         )
     }
 
+    // MARK: - Card Animation
+
     private func cardAnimation(index: Int) -> Animation {
+
         WalletLayoutCalculator.cardAnimation(
             index: index,
             cardCount: Config.defaultCardCount,
@@ -293,7 +487,10 @@ struct Wallet: View {
         )
     }
 
+    // MARK: - Spring
+
     private var walletSpring: Animation {
+
         .spring(
             response: Config.springResponse,
             dampingFraction: Config.springDamping,
@@ -301,9 +498,13 @@ struct Wallet: View {
         )
     }
 
+    // MARK: - Image Builder
+
     @ViewBuilder
     private func image(named name: String) -> some View {
+
         if let image = UIImage(named: name) {
+
             Image(uiImage: image)
                 .resizable()
                 .scaledToFit()
@@ -314,15 +515,24 @@ struct Wallet: View {
 // MARK: - Preview
 
 #Preview {
+
     GeometryReader { geo in
+
         let screenFrame = geo.frame(in: .global)
 
         VStack {
+
             Spacer()
 
             Wallet(
-                width: min(geo.size.width - WalletConfig.previewHorizontalPadding, WalletConfig.previewMaxWalletWidth),
-                screenCenter: CGPoint(x: screenFrame.midX, y: screenFrame.midY)
+                width: min(
+                    geo.size.width - WalletConfig.previewHorizontalPadding,
+                    WalletConfig.previewMaxWalletWidth
+                ),
+                screenCenter: CGPoint(
+                    x: screenFrame.midX,
+                    y: screenFrame.midY
+                )
             )
 
             Spacer()
