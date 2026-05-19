@@ -10,14 +10,32 @@ Put each new concept here:
 wallet/wallet/<ConceptName>/
   Assets/
   Components/
+  Config/
+  Helpers/
+  Models/
   Pages/
 ```
 
 Use the folders like this:
 
-- `Assets`: files used only by this concept.
-- `Components`: small reusable SwiftUI views.
-- `Pages`: full screen views.
+- `Assets/`: Concept-only images, icons, and other visual files.
+- `Components/`: Small reusable SwiftUI views used inside the concept.
+- `Config/`: Constants and tweakable values for layout, sizing, timing, and styling.
+- `Helpers/`: Focused utility code that supports the concept's views.
+- `Models/`: Data types, state enums, and layout structs for the concept.
+- `Pages/`: Full-screen SwiftUI views that can be shown from the app entry point.
+
+Current concept:
+
+```text
+wallet/wallet/Digilocker/
+  Assets/
+  Components/
+  Config/
+  Helpers/
+  Models/
+  Pages/
+```
 
 ## App Start
 
