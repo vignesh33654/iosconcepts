@@ -186,6 +186,7 @@ struct Wallet: View {
             : nil
 
         return WalletCardView(
+            cardIndex: index,
             width: width * layout.widthScale,
 
             frontImageName: frontImageName,
@@ -229,9 +230,9 @@ struct Wallet: View {
             hiddenOpacity: Config.hiddenOpacity,
             visibleOpacity: Config.visibleOpacity,
 
-            borderColors: Config.cardBorderColors,
-            showsStroke: isExpanded,
-            appliesShadow: isExpanded || !isTopWalletCard,
+            borderColors: Config.cardAnimatedBorderColors,
+            showsStroke: isExpanded && isSelected,
+            appliesShadow: (isExpanded || !isTopWalletCard) && !isSelected,
 
             swipeMinimumDistance: Config.cardSwipeMinimumDistance
 

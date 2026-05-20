@@ -44,6 +44,41 @@ enum WalletConfig {
     static let bottomPadding: CGFloat = 16
     static let cardCornerRadius: CGFloat = 12
     static let cardStrokeWidth: CGFloat = 2
+    static let cardStaticStrokeGradientStartPoint = UnitPoint.topLeading
+    static let cardStaticStrokeGradientEndPoint = UnitPoint.bottomTrailing
+    static let isCardStrokeAnimationEnabled = false
+    static let cardAnimatedStrokeWidth: CGFloat = 2
+    static let cardStrokeOpacity = 0.4
+    static let cardStrokeGlowWidth: CGFloat = 8
+    static let cardStrokeGlowBlur: CGFloat = 10
+    static let cardStrokeGlowOpacity = 0.7
+    static let cardStrokeGradientScale: CGFloat = 1.7
+    static let cardStrokeGradientStartPoint = UnitPoint.leading
+    static let cardStrokeGradientEndPoint = UnitPoint.trailing
+    static let cardStrokeAnimationStartAngle = 0.0
+    static let cardStrokeAnimationEndAngle = 360.0
+    static let cardStrokeAnimationDuration = 0.8
+    static let cardStrokeAnimationRepeatCount = 1
+    static let cardStrokeAnimationAutoreverses = false
+    static let cardExpandedBackgroundDelay = 0.75
+    static let cardExpandedBackgroundFadeDuration = 0.7
+    static let cardExpandedBackgroundOpacity = 0.5
+    static let cardExpandedBackgroundBlur: CGFloat = 32
+    static let cardExpandedBackgroundScale: CGFloat = 1.3
+    static let cardExpandedBackgroundCornerRadiusRatio: CGFloat = 0.5
+    static let cardExpandedBackgroundTransform = CGAffineTransform.identity
+    static let cardExpandedBackgroundGradientStartPoint = UnitPoint(x: 0.25, y: 0.5)
+    static let cardExpandedBackgroundGradientEndPoint = UnitPoint(x: 0.75, y: 0.5)
+    static let cardExpandedBackgroundGradientStops: [Gradient.Stop] = [
+        Gradient.Stop(color: Color(red: 0.918, green: 0.557, blue: 0.282), location: 0),
+        Gradient.Stop(color: Color(red: 0.212, green: 0.667, blue: 0.953), location: 0.46),
+        Gradient.Stop(color: Color(red: 0.612, green: 0.89, blue: 0.654), location: 0.88)
+    ]
+    static let cardExpandedBackgroundGradientStopsByIndex: [Int: [Gradient.Stop]] = [
+        0: cardExpandedBackgroundGradientStops,
+        1: cardExpandedBackgroundGradientStops,
+        2: cardExpandedBackgroundGradientStops
+    ]
     static let cardShadowColor = Color.black.opacity(0.22)
     static let cardShadowRadius: CGFloat = 20
     static let cardShadowX: CGFloat = -5
@@ -83,6 +118,13 @@ enum WalletConfig {
     static let cardBorderColors = [
         Color.white,
         Color(red: 0.82, green: 0.82, blue: 0.82)
+    ]
+    static let cardAnimatedBorderColors = [
+        Color(red: 1.0, green: 0.28, blue: 0.32),
+        Color(red: 0.72, green: 0.36, blue: 1.0),
+        Color(red: 0.22, green: 0.82, blue: 1.0),
+        Color(red: 1.0, green: 0.78, blue: 0.26),
+        Color(red: 1.0, green: 0.28, blue: 0.32)
     ]
     static let gyroscopeNeutralAngle = 0.0
     static let gyroscopeMaxTiltAngle = 8.0
