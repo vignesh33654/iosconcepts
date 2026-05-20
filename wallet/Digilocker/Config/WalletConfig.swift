@@ -131,6 +131,19 @@ enum WalletConfig {
         Color(red: 1.0, green: 0.78, blue: 0.26),
         Color(red: 1.0, green: 0.28, blue: 0.32)
     ]
+    static let isHolographicEnabled = true
+    static let holographicOpacity: Double = 0.3
+    static let holographicShiftScale: CGFloat = 0.5
+    static let holographicColors: [Color] = [
+        .clear,
+        Color(red: 0.6, green: 0.0, blue: 1.0),
+        Color(red: 0.0, green: 0.5, blue: 1.0),
+        Color(red: 0.0, green: 0.9, blue: 0.85),
+        Color(red: 0.2, green: 0.85, blue: 0.3),
+        Color(red: 1.0, green: 0.9, blue: 0.0),
+        .clear
+    ]
+
     static let gyroscopeNeutralAngle = 0.0
     static let gyroscopeMaxTiltAngle = 8.0
     static let gyroscopeMotionScale = 20.0

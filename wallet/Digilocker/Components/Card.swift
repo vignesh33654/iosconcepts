@@ -75,6 +75,14 @@ struct WalletCardView: View {
             )
             .rotation3DEffect(.degrees(backFaceRotationAngle), axis: (x: 0, y: 1, z: 0))
             .opacity(isShowingBack ? visibleOpacity : hiddenOpacity)
+
+            if Config.isHolographicEnabled && isSelected {
+                HolographicOverlay(
+                    pitchAngle: gyroPitchAngle,
+                    rollAngle: gyroRollAngle,
+                    cornerRadius: cornerRadius
+                )
+            }
         }
         .compositingGroup()
         .rotation3DEffect(
@@ -407,6 +415,31 @@ private struct AnimatedCardStroke: View {
         )
         .frame(width: size, height: size)
         .rotationEffect(.degrees(rotationAngle))
+    }
+}
+
+private struct HolographicOverlay: View {
+    private typealias Config = WalletConfig
+
+    let pitchAngle: Double
+    let rollAngle: Double
+    let cornerRadius: CGFloat
+
+    var body: some View {
+        let xShift = CGFloat(rollAngle / Config.gyroscopeMaxTiltAngle) * Config.holographicShiftScale
+        let yShift = CGFloat(pitchAngle / Config.gyroscopeMaxTiltAngle) * Config.holographicShiftScale
+
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: Config.holographicColors,
+                    startPoint: UnitPoint(x: 0.5 + xShift, y: 0.0 + yShift),
+                    endPoint: UnitPoint(x: 0.5 - xShift, y: 1.0 - yShift)
+                )
+            )
+            .blendMode(.screen)
+            .opacity(Config.holographicOpacity)
+            .allowsHitTesting(false)
     }
 }
 
