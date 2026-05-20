@@ -40,7 +40,9 @@ struct WalletCardView: View {
     let fullRotationAngle: Double
     let hiddenOpacity: Double
     let visibleOpacity: Double
-    let borderEndColor: Color
+    let borderColors: [Color]
+    let showsStroke: Bool
+    let appliesShadow: Bool
     let swipeMinimumDistance: CGFloat
     let onTap: () -> Void
     let onSwipe: (CGFloat) -> Void
@@ -52,7 +54,9 @@ struct WalletCardView: View {
                 width: width,
                 cornerRadius: cornerRadius,
                 strokeWidth: strokeWidth,
-                borderEndColor: borderEndColor
+                borderColors: borderColors,
+                showsStroke: showsStroke,
+                appliesShadow: appliesShadow
             )
             .opacity(isShowingBack ? hiddenOpacity : visibleOpacity)
 
@@ -61,11 +65,12 @@ struct WalletCardView: View {
                 width: width,
                 cornerRadius: cornerRadius,
                 strokeWidth: strokeWidth,
-                borderEndColor: borderEndColor
+                borderColors: borderColors,
+                showsStroke: showsStroke,
+                appliesShadow: appliesShadow
             )
             .rotation3DEffect(.degrees(backFaceRotationAngle), axis: (x: 0, y: 1, z: 0))
             .opacity(isShowingBack ? visibleOpacity : hiddenOpacity)
-
         }
         .compositingGroup()
         .rotation3DEffect(
@@ -155,11 +160,11 @@ struct WalletCardView: View {
 
             gyroPitchAngle = Self.clamped(
                 -motion.attitude.pitch * Config.gyroscopeMotionScale,
-                limit: Config.gyroscopeMaxTiltAngle
+                 limit: Double(Config.gyroscopeMaxTiltAngle)
             )
             gyroRollAngle = Self.clamped(
                 motion.attitude.roll * Config.gyroscopeMotionScale,
-                limit: Config.gyroscopeMaxTiltAngle
+                limit: Double(Config.gyroscopeMaxTiltAngle)
             )
         }
     }
@@ -177,18 +182,21 @@ struct WalletCardView: View {
         }
     }
 
-
     private static func clamped(_ value: Double, limit: Double) -> Double {
         min(max(value, -limit), limit)
     }
 }
 
 private struct CardImageView: View {
+    private typealias Config = WalletConfig
+
     let imageName: String
     let width: CGFloat
     let cornerRadius: CGFloat
     let strokeWidth: CGFloat
-    let borderEndColor: Color
+    let borderColors: [Color]
+    let showsStroke: Bool
+    let appliesShadow: Bool
 
     var body: some View {
         if let image = UIImage(named: imageName) {
@@ -201,13 +209,20 @@ private struct CardImageView: View {
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                         .strokeBorder(
                             LinearGradient(
-                                colors: [.white, borderEndColor],
+                                colors: borderColors,
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
                             lineWidth: strokeWidth
                         )
+                        .opacity(showsStroke ? Config.visibleOpacity : Config.hiddenOpacity)
                 }
+                .shadow(
+                    color: appliesShadow ? Config.cardShadowColor : .clear,
+                    radius: Config.cardShadowRadius,
+                    x: Config.cardShadowX,
+                    y: Config.cardShadowY
+                )
         }
     }
 }

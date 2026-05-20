@@ -114,6 +114,12 @@ struct Wallet: View {
 
             image(named: Config.pocketImageName)
                 .frame(width: width + Config.pocketWidthExtra)
+                .shadow(
+                    color: Config.pocketShadowColor,
+                    radius: Config.pocketShadowRadius,
+                    x: Config.pocketShadowX,
+                    y: Config.pocketShadowY
+                )
                 .offset(y: Config.pocketOffsetY)
                 .zIndex(Config.pocketZIndex)
                 .allowsHitTesting(false)
@@ -170,6 +176,7 @@ struct Wallet: View {
 
         let isSelected = selectedCardIndex == index
         let layout = Config.cardLayouts[slot]
+        let isTopWalletCard = slot == Config.defaultCardCount - 1
 
         let flipAnimation: Animation? = isSelected
             ? .smooth(
@@ -222,7 +229,9 @@ struct Wallet: View {
             hiddenOpacity: Config.hiddenOpacity,
             visibleOpacity: Config.visibleOpacity,
 
-            borderEndColor: Config.cardBorderEndColor,
+            borderColors: Config.cardBorderColors,
+            showsStroke: isExpanded,
+            appliesShadow: isExpanded || !isTopWalletCard,
 
             swipeMinimumDistance: Config.cardSwipeMinimumDistance
 
