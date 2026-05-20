@@ -479,7 +479,8 @@ struct Wallet: View {
             index: index,
             cardCenter: cardBaseCenters[index],
             screenCenter: screenCenter,
-            selectedCardUp: Config.selectedCardUp
+            selectedCardUp: Config.selectedCardUp,
+            visualYOffset: Config.cardLayouts[index].lift
         )
     }
 
