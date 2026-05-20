@@ -31,7 +31,8 @@ enum WalletLayoutCalculator {
         index: Int,
         cardCenter: CGPoint?,
         screenCenter: CGPoint?,
-        selectedCardUp: CGFloat
+        selectedCardUp: CGFloat,
+        visualYOffset: CGFloat = 0
     ) -> CGSize {
         guard
             selectedCardIndex == index,
@@ -41,9 +42,12 @@ enum WalletLayoutCalculator {
             return .zero
         }
 
+        // cardCenter is the layout-frame center (pre-transform).
+        // The card's actual visual Y = cardCenter.y + visualYOffset (from .offset(y:)).
+        // We subtract visualYOffset so the card lands at screenCenter.y + selectedCardUp.
         return CGSize(
             width: screenCenter.x - cardCenter.x,
-            height: screenCenter.y - cardCenter.y + selectedCardUp
+            height: screenCenter.y - cardCenter.y - visualYOffset + selectedCardUp
         )
     }
 
