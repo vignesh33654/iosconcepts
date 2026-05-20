@@ -51,6 +51,7 @@ struct Wallet: View {
         )
 
     @State private var cardBaseCenters: [Int: CGPoint] = [:]
+    @State private var cardBounceOffsets: [CGFloat] = Array(repeating: 0, count: Config.defaultCardCount)
 
     var body: some View {
         VStack(spacing: Config.mainStackSpacing) {
@@ -204,6 +205,8 @@ struct Wallet: View {
                 ? layout.lift
                 : layout.rest,
 
+            bounceOffset: cardBounceOffsets[index],
+
             rotation: isExpanded
                 ? layout.rotation
                 : Config.collapsedRotation,
@@ -334,6 +337,7 @@ struct Wallet: View {
                 )
 
             selectedCardIndex = nil
+            cardBounceOffsets = Array(repeating: 0, count: Config.defaultCardCount)
 
             withAnimation(walletSpring) {
 
@@ -372,6 +376,26 @@ struct Wallet: View {
 
             withAnimation(spring) {
                 selectedCardIndex = nil
+            }
+
+            let dismissedIndex = index
+            for j in 0..<Config.defaultCardCount where j != dismissedIndex {
+                let delay = Double(abs(j - dismissedIndex)) * Config.cardBounceDelayStep
+                Task { @MainActor in
+                    if delay > 0 {
+                        try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                    }
+                    var t = Transaction()
+                    t.disablesAnimations = true
+                    withTransaction(t) { cardBounceOffsets[j] = Config.cardBounceOffset }
+                    try? await Task.sleep(nanoseconds: 16_666_667)
+                    withAnimation(.spring(
+                        response: Config.cardBounceSpringResponse,
+                        dampingFraction: Config.cardBounceSpringDamping
+                    )) {
+                        cardBounceOffsets[j] = 0
+                    }
+                }
             }
 
         } else {

@@ -29,6 +29,7 @@ struct WalletCardView: View {
     let openFlipAngle: Double
     let displayScale: CGFloat
     let yOffset: CGFloat
+    let bounceOffset: CGFloat
     let rotation: Double
     let selectedOffset: CGSize
     let zIndex: Double
@@ -96,7 +97,7 @@ struct WalletCardView: View {
             axis: (x: 0, y: 1, z: 0),
             perspective: flipPerspective
         )
-        .offset(y: yOffset)
+        .offset(y: yOffset + bounceOffset)
         .scaleEffect(displayScale)
         .rotationEffect(.degrees(isSelected ? 0 : rotation))
         .offset(x: selectedOffset.width, y: selectedOffset.height)

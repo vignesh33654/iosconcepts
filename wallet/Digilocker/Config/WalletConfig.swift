@@ -106,6 +106,10 @@ enum WalletConfig {
     static let selectedCardSpringResponse = 0.5
     static let selectedCardSpringDamping = 0.8
     static let selectedCardUp: CGFloat = -60
+    static let cardBounceOffset: CGFloat = 12
+    static let cardBounceSpringResponse = 0.5
+    static let cardBounceSpringDamping = 0.35
+    static let cardBounceDelayStep = 0.05
     static let swipeSpringResponse = 0.6
     static let swipeSpringDamping = 0.75
     static let backFaceRotationAngle = 180.0
