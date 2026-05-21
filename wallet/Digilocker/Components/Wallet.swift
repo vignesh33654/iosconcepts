@@ -52,6 +52,7 @@ struct Wallet: View {
 
     @State private var cardBaseCenters: [Int: CGPoint] = [:]
     @State private var cardBounceOffsets: [CGFloat] = Array(repeating: 0, count: Config.defaultCardCount)
+    @State private var cardShaderTriggerIDs = Array(repeating: 0, count: Config.defaultCardCount)
 
     var body: some View {
         VStack(spacing: Config.mainStackSpacing) {
@@ -199,7 +200,7 @@ struct Wallet: View {
             flipAngle: flipAngles[index],
             openFlipAngle: openFlipAngles[index],
 
-            displayScale: displayScales[slot],
+            displayScale: isSelected ? Config.selectedCardScale : displayScales[slot],
 
             yOffset: isExpanded
                 ? layout.lift
@@ -236,6 +237,7 @@ struct Wallet: View {
             borderColors: Config.cardAnimatedBorderColors,
             showsStroke: isExpanded && isSelected,
             appliesShadow: (isExpanded || !isTopWalletCard) && !isSelected,
+            shaderTriggerID: cardShaderTriggerIDs[index],
 
             swipeMinimumDistance: Config.cardSwipeMinimumDistance
 
@@ -422,7 +424,7 @@ struct Wallet: View {
                 openFlipAngles[index] = Config.openFlipAngle
             }
 
-            // Pull-out dip: cards above the selected card drop into the gap it leaves
+            // Pull-out dip: cards above the selected card drop into the gap it leaves.
             let newIndex = index
             for j in 0..<Config.defaultCardCount where j < newIndex {
                 let delay = Double(newIndex - j - 1) * Config.cardBounceDelayStep
@@ -442,6 +444,8 @@ struct Wallet: View {
                     }
                 }
             }
+
+            cardShaderTriggerIDs[index] += 1
         }
     }
 
@@ -496,8 +500,11 @@ struct Wallet: View {
     // MARK: - Images
 
     private func frontImageName(for index: Int) -> String {
+        if index == Config.defaultCardCount - 1 {
+            return Config.lastCardFrontImageName
+        }
 
-        WalletLayoutCalculator.imageName(
+        return WalletLayoutCalculator.imageName(
             for: index,
             primaryName: cardImageName,
             secondaryName: Config.secondCardFrontImageName,
@@ -506,8 +513,11 @@ struct Wallet: View {
     }
 
     private func backImageName(for index: Int) -> String {
+        if index == Config.defaultCardCount - 1 {
+            return Config.lastCardBackImageName
+        }
 
-        WalletLayoutCalculator.imageName(
+        return WalletLayoutCalculator.imageName(
             for: index,
             primaryName: backCardImageName,
             secondaryName: Config.secondCardBackImageName,

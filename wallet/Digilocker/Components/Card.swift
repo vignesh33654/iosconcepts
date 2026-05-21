@@ -45,6 +45,7 @@ struct WalletCardView: View {
     let borderColors: [Color]
     let showsStroke: Bool
     let appliesShadow: Bool
+    let shaderTriggerID: Int
     let swipeMinimumDistance: CGFloat
     let onTap: () -> Void
     let onSwipe: (CGFloat) -> Void
@@ -56,9 +57,11 @@ struct WalletCardView: View {
                 imageName: frontImageName,
                 width: width,
                 cornerRadius: cornerRadius,
+                shaderTriggerID: shaderTriggerID,
                 strokeWidth: strokeWidth,
                 borderColors: borderColors,
                 showsStroke: showsStroke,
+                showsAnimatedStrokeTrigger: shouldAnimateStroke,
                 appliesShadow: appliesShadow
             )
             .opacity(isShowingBack ? hiddenOpacity : visibleOpacity)
@@ -68,9 +71,11 @@ struct WalletCardView: View {
                 imageName: backImageName,
                 width: width,
                 cornerRadius: cornerRadius,
+                shaderTriggerID: shaderTriggerID,
                 strokeWidth: strokeWidth,
                 borderColors: borderColors,
                 showsStroke: showsStroke,
+                showsAnimatedStrokeTrigger: shouldAnimateStroke,
                 appliesShadow: appliesShadow
             )
             .rotation3DEffect(.degrees(backFaceRotationAngle), axis: (x: 0, y: 1, z: 0))
@@ -84,6 +89,7 @@ struct WalletCardView: View {
                 )
             }
         }
+
         .compositingGroup()
         .rotation3DEffect(
             .degrees(flipAngle),
@@ -135,6 +141,21 @@ struct WalletCardView: View {
                     onSwipe(horizontalDistance)
                 }
         )
+    }
+
+    private var shouldAnimateStroke: Bool {
+        if Config.cardStrokeAnimationTriggersOnTilt {
+            return isTiltedEnough
+        }
+
+        return showsStroke
+    }
+
+    private var isTiltedEnough: Bool {
+        guard isExpanded, isSelected else { return false }
+
+        return abs(gyroPitchAngle) >= Config.cardStrokeTiltActivationAngle
+            || abs(gyroRollAngle) >= Config.cardStrokeTiltActivationAngle
     }
 
     private var isShowingBack: Bool {
@@ -206,9 +227,11 @@ private struct CardImageView: View {
     let imageName: String
     let width: CGFloat
     let cornerRadius: CGFloat
+    let shaderTriggerID: Int
     let strokeWidth: CGFloat
     let borderColors: [Color]
     let showsStroke: Bool
+    let showsAnimatedStrokeTrigger: Bool
     let appliesShadow: Bool
 
     @State private var showsAnimatedStroke = false
@@ -220,15 +243,28 @@ private struct CardImageView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: width)
+                .background(.white)
                 .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
                 .background {
-                    ExpandedCardBackground(
-                        cardIndex: cardIndex,
-                        isVisible: showsExpandedBackground
-                    )
+                    ZStack {
+                        ExpandedCardBackground(
+                            cardIndex: cardIndex,
+                            isVisible: showsExpandedBackground
+                        )
+
+                        ExpandedCardShadow(
+                            cornerRadius: cornerRadius,
+                            isVisible: showsStroke
+                        )
+                    }
                 }
                 .overlay {
                     ZStack {
+                        CardShaderOverlay(
+                            cornerRadius: cornerRadius,
+                            triggerID: shaderTriggerID
+                        )
+
                         StaticCardStroke(
                             cornerRadius: cornerRadius,
                             strokeWidth: strokeWidth
@@ -243,12 +279,12 @@ private struct CardImageView: View {
                     }
                 }
                 .shadow(
-                    color: appliesShadow ? Config.cardShadowColor : .clear,
-                    radius: Config.cardShadowRadius,
-                    x: Config.cardShadowX,
-                    y: Config.cardShadowY
+                    color: cardShadowColor,
+                    radius: cardShadowRadius,
+                    x: cardShadowX,
+                    y: cardShadowY
                 )
-                .task(id: showsStroke) {
+                .task(id: showsAnimatedStrokeTrigger) {
                     await updateAnimatedStrokeVisibility()
                 }
                 .task(id: showsStroke) {
@@ -261,8 +297,28 @@ private struct CardImageView: View {
         Config.isCardStrokeAnimationEnabled && showsAnimatedStroke
     }
 
+    private var cardShadowColor: Color {
+        if showsStroke {
+            return Config.expandedCardShadowColor
+        }
+
+        return appliesShadow ? Config.cardShadowColor : .clear
+    }
+
+    private var cardShadowRadius: CGFloat {
+        showsStroke ? Config.expandedCardShadowRadius : Config.cardShadowRadius
+    }
+
+    private var cardShadowX: CGFloat {
+        showsStroke ? Config.expandedCardShadowX : Config.cardShadowX
+    }
+
+    private var cardShadowY: CGFloat {
+        showsStroke ? Config.expandedCardShadowY : Config.cardShadowY
+    }
+
     private func updateAnimatedStrokeVisibility() async {
-        guard Config.isCardStrokeAnimationEnabled, showsStroke else {
+        guard Config.isCardStrokeAnimationEnabled, showsAnimatedStrokeTrigger else {
             showsAnimatedStroke = false
             return
         }
@@ -283,6 +339,11 @@ private struct CardImageView: View {
             return
         }
 
+        guard Config.isCardExpandedBackgroundAnimationEnabled else {
+            showsExpandedBackground = true
+            return
+        }
+
         showsExpandedBackground = false
 
         let nanoseconds = UInt64(Config.cardExpandedBackgroundDelay * 1_000_000_000)
@@ -295,8 +356,29 @@ private struct CardImageView: View {
     }
 }
 
+private struct ExpandedCardShadow: View {
+    private typealias Config = WalletConfig
+
+    let cornerRadius: CGFloat
+    let isVisible: Bool
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(Config.expandedCardShadowColor)
+            .padding(-Config.expandedCardShadowSpread)
+            .blur(radius: Config.expandedCardShadowRadius)
+            .opacity(isVisible ? Config.visibleOpacity : Config.hiddenOpacity)
+            .allowsHitTesting(false)
+    }
+}
+
 private struct ExpandedCardBackground: View {
     private typealias Config = WalletConfig
+    private let strokeColor = Color.white
+    private let strokeWidth: CGFloat = 3
+    private let shadowColor = Color(red: 0.447, green: 0.447, blue: 0.447).opacity(0.09)
+    private let shadowBlur: CGFloat = 5
+    private let shadowSpread: CGFloat = 4
 
     let cardIndex: Int
     let isVisible: Bool
@@ -306,14 +388,28 @@ private struct ExpandedCardBackground: View {
             let backgroundWidth = proxy.size.width * Config.cardExpandedBackgroundScale
             let backgroundHeight = proxy.size.height * Config.cardExpandedBackgroundScale
             let cornerRadius = min(backgroundWidth, backgroundHeight) * Config.cardExpandedBackgroundCornerRadiusRatio
+            let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
 
-            LinearGradient(
-                stops: gradientStops,
-                startPoint: Config.cardExpandedBackgroundGradientStartPoint,
-                endPoint: Config.cardExpandedBackgroundGradientEndPoint
-            )
+            ZStack {
+                shape
+                    .fill(shadowColor)
+                    .frame(
+                        width: backgroundWidth + (shadowSpread * 2),
+                        height: backgroundHeight + (shadowSpread * 2)
+                    )
+                    .blur(radius: shadowBlur)
+
+                LinearGradient(
+                    stops: gradientStops,
+                    startPoint: Config.cardExpandedBackgroundGradientStartPoint,
+                    endPoint: Config.cardExpandedBackgroundGradientEndPoint
+                )
+                .clipShape(shape)
+                .overlay {
+                    shape.stroke(strokeColor, lineWidth: strokeWidth)
+                }
+            }
             .frame(width: backgroundWidth, height: backgroundHeight)
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .transformEffect(Config.cardExpandedBackgroundTransform)
             .blur(radius: Config.cardExpandedBackgroundBlur)
             .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
@@ -328,6 +424,61 @@ private struct ExpandedCardBackground: View {
     }
 }
 
+private struct CardShaderOverlay: View {
+    private typealias Config = WalletConfig
+
+    let cornerRadius: CGFloat
+    let triggerID: Int
+
+    @State private var sweepXRatio = Config.cardShaderSweepStartXRatio
+    @State private var isShowingSweep = false
+
+    var body: some View {
+        GeometryReader { proxy in
+            LinearGradient(
+                stops: Config.cardShaderGradientStops,
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(
+                width: proxy.size.width * Config.cardShaderWidthScale,
+                height: proxy.size.height * Config.cardShaderHeightScale
+            )
+            .rotationEffect(.degrees(Config.cardShaderRotationAngle))
+            .blur(radius: Config.cardShaderBlur)
+            .position(
+                x: proxy.size.width * (sweepXRatio + Config.cardShaderOffsetXRatio),
+                y: proxy.size.height * (0.5 + Config.cardShaderOffsetYRatio)
+            )
+            .opacity(isShowingSweep ? Config.cardShaderOpacity : Config.hiddenOpacity)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        .allowsHitTesting(false)
+        .task(id: triggerID) {
+            await runSweepOnce()
+        }
+    }
+
+    private func runSweepOnce() async {
+        sweepXRatio = Config.cardShaderSweepStartXRatio
+        isShowingSweep = false
+
+        guard Config.isCardShaderEnabled, triggerID > 0 else { return }
+
+        isShowingSweep = true
+
+        withAnimation(.linear(duration: Config.cardShaderSweepDuration)) {
+            sweepXRatio = Config.cardShaderSweepEndXRatio
+        }
+
+        let nanoseconds = UInt64(Config.cardShaderSweepDuration * 1_000_000_000)
+        try? await Task.sleep(nanoseconds: nanoseconds)
+
+        guard !Task.isCancelled else { return }
+        isShowingSweep = false
+    }
+}
+
 private struct StaticCardStroke: View {
     private typealias Config = WalletConfig
 
@@ -336,14 +487,7 @@ private struct StaticCardStroke: View {
 
     var body: some View {
         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .strokeBorder(
-                LinearGradient(
-                    colors: Config.cardBorderColors,
-                    startPoint: Config.cardStaticStrokeGradientStartPoint,
-                    endPoint: Config.cardStaticStrokeGradientEndPoint
-                ),
-                lineWidth: strokeWidth
-            )
+            .strokeBorder(Color.white, lineWidth: strokeWidth)
             .allowsHitTesting(false)
     }
 }
