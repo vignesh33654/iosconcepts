@@ -43,6 +43,21 @@ struct GyroscopeHolographicGhostImage: View {
     private static let smoothstepExponentMultiplier: CGFloat = 2
     fileprivate static let previewBackgroundOpacity = 0.08
 
+    private static let foilColors: [Color] = [
+        Color(hue: 0.92, saturation: 0.80, brightness: 1),
+        Color(hue: 0.05, saturation: 0.85, brightness: 1),
+        Color(hue: 0.17, saturation: 0.80, brightness: 1),
+        Color(hue: 0.35, saturation: 0.80, brightness: 1),
+        Color(hue: 0.55, saturation: 0.85, brightness: 1),
+        Color(hue: 0.66, saturation: 0.80, brightness: 1),
+        Color(hue: 0.80, saturation: 0.80, brightness: 1),
+        Color(hue: 0.92, saturation: 0.80, brightness: 1),
+    ]
+    private static let foilBaseOpacity: Double = 0.06
+    private static let foilTiltOpacityScale: Double = 0.55  // ← foil intensity at full tilt
+    private static let foilShiftScale: Double = 0.65        // ← how far rainbow slides per tilt unit
+    private static let sheenOpacity: Double = 0.18          // ← metallic sheen strength
+
     @State private var tilt = CGSize.zero
     @State private var revealProgress: CGFloat = Self.easingStart
 
@@ -61,6 +76,9 @@ struct GyroscopeHolographicGhostImage: View {
 
                     exactImage(afterImage)
                         .opacity(Self.afterMaxOpacity * naturalRevealProgress)
+
+                    holographicFoil
+                    metallicSheen
                 }
                 .frame(width: imageWidth)
                 .rotation3DEffect(
@@ -80,6 +98,37 @@ struct GyroscopeHolographicGhostImage: View {
         .onDisappear {
             stopGyroscope()
         }
+    }
+
+    // Rainbow foil: diagonal gradient whose start/end shift laterally with tilt,
+    // so the spectrum drifts across the image like a holographic sticker.
+    private var holographicFoil: some View {
+        let shift = Double(tilt.width) * Self.foilShiftScale
+        return LinearGradient(
+            colors: Self.foilColors,
+            startPoint: UnitPoint(x: shift, y: 0),
+            endPoint: UnitPoint(x: 1 + shift, y: 1)
+        )
+        .blendMode(.screen)
+        .opacity(Self.foilBaseOpacity + abs(Double(tilt.width)) * Self.foilTiltOpacityScale)
+        .allowsHitTesting(false)
+    }
+
+    // Narrow white band that travels with tilt — the "polished metal" specular highlight.
+    private var metallicSheen: some View {
+        let center = 0.5 + Double(tilt.width) * 0.4
+        return LinearGradient(
+            stops: [
+                .init(color: .white.opacity(0), location: 0),
+                .init(color: .white.opacity(1), location: 0.5),
+                .init(color: .white.opacity(0), location: 1),
+            ],
+            startPoint: UnitPoint(x: center - 0.3, y: 0),
+            endPoint: UnitPoint(x: center + 0.3, y: 1)
+        )
+        .blendMode(.screen)
+        .opacity(Self.sheenOpacity * abs(Double(tilt.width)))
+        .allowsHitTesting(false)
     }
 
     private var naturalRevealProgress: CGFloat {
