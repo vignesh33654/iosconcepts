@@ -73,6 +73,36 @@ struct Wallet: View {
             walletContent
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(themeBackground)
+    }
+
+    // MARK: - Theme Background
+
+    // One gradient layer per card; only the selected card's layer is visible.
+    // Using per-layer opacity (not animating gradient stops) guarantees smooth cross-fades.
+    @ViewBuilder
+    private var themeBackground: some View {
+        ZStack {
+            ForEach(0..<Config.defaultCardCount, id: \.self) { index in
+                if let color = Config.cardThemeColors[index] {
+                    LinearGradient(
+                        colors: [
+                            color.opacity(Config.cardThemeBottomOpacity),
+                            color.opacity(Config.cardThemeTopOpacity),
+                        ],
+                        startPoint: .bottom,
+                        endPoint: .top
+                    )
+                    .opacity(selectedCardIndex == index ? 1 : 0)
+                }
+            }
+        }
+        .ignoresSafeArea()
+        .animation(
+            .easeInOut(duration: Config.cardThemeFadeDuration),
+            value: selectedCardIndex
+        )
+        .allowsHitTesting(false)
     }
 
     // MARK: - Header

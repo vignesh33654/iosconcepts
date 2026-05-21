@@ -177,4 +177,15 @@ enum WalletConfig {
         WalletCardLayout(lift: -20, rest: 10, rotation: 0, scale: 0.98, widthScale: 0.9),
         WalletCardLayout(lift: 12, rest: 12, rotation: 0, scale: 0.98, widthScale: 0.9)
     ]
+
+    // Full-screen tint that shifts to the selected card's identity colour.
+    // Each layer fades in/out independently so switching cards cross-fades cleanly.
+    static let cardThemeColors: [Int: Color] = [
+        0: Color(red: 0.92, green: 0.72, blue: 0.30),  // warm gold   — Arav card  ← adjust
+        1: Color(red: 0.35, green: 0.75, blue: 0.55),  // fresh teal  — Voter ID   ← adjust
+        2: Color(red: 0.96, green: 0.45, blue: 0.15),  // saffron     — Aadhar     ← adjust
+    ]
+    static let cardThemeBottomOpacity: Double = 0.28   // ← tint strength at bottom
+    static let cardThemeTopOpacity: Double = 0.08      // ← tint strength at top
+    static let cardThemeFadeDuration: Double = 0.55    // ← fade speed in/out
 }
