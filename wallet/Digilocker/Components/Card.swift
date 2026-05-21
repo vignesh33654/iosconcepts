@@ -46,11 +46,17 @@ struct WalletCardView: View {
     let showsStroke: Bool
     let appliesShadow: Bool
     let swipeMinimumDistance: CGFloat
+    let isDissolving: Bool
     let onTap: () -> Void
     let onSwipe: (CGFloat) -> Void
+    let onDelete: () -> Void
+    let onDissolveComplete: () -> Void
 
     var body: some View {
         ZStack {
+            if isDissolving {
+                CardDissolveView(imageName: frontImageName, onComplete: onDissolveComplete)
+            } else {
             CardImageView(
                 cardIndex: cardIndex,
                 imageName: frontImageName,
@@ -83,6 +89,7 @@ struct WalletCardView: View {
                     cornerRadius: cornerRadius
                 )
             }
+            } // end of else (non-dissolving)
         }
         .compositingGroup()
         .rotation3DEffect(
@@ -121,6 +128,10 @@ struct WalletCardView: View {
             isSelected ? startGyroscope() : stopGyroscope()
         }
         .onTapGesture(perform: onTap)
+        .onLongPressGesture(minimumDuration: 0.6) {
+            guard isSelected else { return }
+            onDelete()
+        }
         .simultaneousGesture(
             DragGesture(minimumDistance: swipeMinimumDistance)
                 .onEnded { value in

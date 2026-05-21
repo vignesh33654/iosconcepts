@@ -52,6 +52,8 @@ struct Wallet: View {
 
     @State private var cardBaseCenters: [Int: CGPoint] = [:]
     @State private var cardBounceOffsets: [CGFloat] = Array(repeating: 0, count: Config.defaultCardCount)
+    @State private var dissolvingCardIndex: Int? = nil
+    @State private var deletedCards: Set<Int> = []
 
     var body: some View {
         VStack(spacing: Config.mainStackSpacing) {
@@ -153,12 +155,14 @@ struct Wallet: View {
                 id: \.self
             ) { index in
 
-                walletCard(
-                    index: index,
-                    slot: index,
-                    frontImageName: frontImageName(for: index),
-                    backImageName: backImageName(for: index)
-                )
+                if !deletedCards.contains(index) {
+                    walletCard(
+                        index: index,
+                        slot: index,
+                        frontImageName: frontImageName(for: index),
+                        backImageName: backImageName(for: index)
+                    )
+                }
             }
         }
         .onPreferenceChange(CardCenterPreferenceKey.self) { centers in
@@ -237,7 +241,9 @@ struct Wallet: View {
             showsStroke: isExpanded && isSelected,
             appliesShadow: (isExpanded || !isTopWalletCard) && !isSelected,
 
-            swipeMinimumDistance: Config.cardSwipeMinimumDistance
+            swipeMinimumDistance: Config.cardSwipeMinimumDistance,
+
+            isDissolving: dissolvingCardIndex == index
 
         ) {
 
@@ -249,6 +255,18 @@ struct Wallet: View {
                 index: index,
                 horizontalDistance: horizontalDistance
             )
+
+        } onDelete: {
+
+            deleteCard(index: index)
+
+        } onDissolveComplete: {
+
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.88)) {
+                if selectedCardIndex == index { selectedCardIndex = nil }
+                dissolvingCardIndex = nil
+                deletedCards.insert(index)
+            }
         }
 
         .background {
@@ -443,6 +461,13 @@ struct Wallet: View {
                 }
             }
         }
+    }
+
+    // MARK: - Delete Card
+
+    private func deleteCard(index: Int) {
+        guard isExpanded, selectedCardIndex == index else { return }
+        dissolvingCardIndex = index
     }
 
     // MARK: - Flip Card
