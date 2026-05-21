@@ -421,6 +421,27 @@ struct Wallet: View {
                 selectedCardIndex = index
                 openFlipAngles[index] = Config.openFlipAngle
             }
+
+            // Pull-out dip: cards above the selected card drop into the gap it leaves
+            let newIndex = index
+            for j in 0..<Config.defaultCardCount where j < newIndex {
+                let delay = Double(newIndex - j - 1) * Config.cardBounceDelayStep
+                Task { @MainActor in
+                    if delay > 0 {
+                        try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                    }
+                    var t = Transaction()
+                    t.disablesAnimations = true
+                    withTransaction(t) { cardBounceOffsets[j] = Config.cardPullOutDipOffset }
+                    try? await Task.sleep(nanoseconds: 16_666_667)
+                    withAnimation(.spring(
+                        response: Config.cardBounceSpringResponse,
+                        dampingFraction: Config.cardBounceSpringDamping
+                    )) {
+                        cardBounceOffsets[j] = 0
+                    }
+                }
+            }
         }
     }
 
