@@ -22,6 +22,12 @@ struct Wallet: View {
         backCardImageName: String = "Arav back",
         screenCenter: CGPoint? = nil
     ) {
+        FontRegistrationHelper.registerFont(
+            fileName: Config.headerFontFileName,
+            fileExtension: Config.headerFontFileExtension,
+            postScriptName: Config.headerFontName
+        )
+
         self.width = width
         self.cardImageName = cardImageName
         self.backCardImageName = backCardImageName
@@ -75,28 +81,18 @@ struct Wallet: View {
         VStack(spacing: Config.headerSpacing) {
 
             Text(Config.title)
-                .font(
-                    .system(
-                        size: Config.titleFontSize,
-                        weight: .regular,
-                        design: .serif
-                    )
-                )
-                .foregroundStyle(.black)
+                .font(.custom(Config.headerFontName, size: Config.titleFontSize))
+                .foregroundStyle(Config.titleColor)
                 .minimumScaleFactor(Config.titleMinimumScale)
                 .lineLimit(Config.headerLineLimit)
 
-            Text(Config.subtitle)
-                .font(
-                    .system(
-                        size: Config.subtitleFontSize,
-                        weight: .regular,
-                        design: .serif
-                    )
-                )
-                .foregroundStyle(.secondary)
-                .minimumScaleFactor(Config.subtitleMinimumScale)
-                .lineLimit(Config.headerLineLimit)
+            if Config.showsSubtitle {
+                Text(Config.subtitle)
+                    .font(.custom(Config.headerFontName, size: Config.subtitleFontSize))
+                    .foregroundStyle(Config.subtitleColor)
+                    .minimumScaleFactor(Config.subtitleMinimumScale)
+                    .lineLimit(Config.headerLineLimit)
+            }
         }
         .multilineTextAlignment(.center)
         .padding(.horizontal, Config.headerHorizontalPadding)

@@ -7,21 +7,6 @@
 
 import SwiftUI
 
-struct WalletConfigItem: Identifiable {
-    let name: String
-    let defaultValue: String
-
-    var id: String { name }
-}
-
-struct WalletConfigNumberItem: Identifiable {
-    let name: String
-    let defaultValue: Double
-    let section: String
-
-    var id: String { name }
-}
-
 enum WalletConfig {
     static let defaultResetFlipAngle = 0.0
     static let defaultInitialCardScale: CGFloat = 1
@@ -32,16 +17,22 @@ enum WalletConfig {
     static let mainWalletHorizontalPadding: CGFloat = 40
     static let mainWalletWidthScale: CGFloat = 0.9
 
-    static let title = "Welcome to digilocker"
-    static let subtitle = "Use your Face ID to check out all your ID"
-    static let headerTopSpacing: CGFloat = 80
+    static let title = "your wallet, reimagined"
+    static let subtitle = "tap a card to take a closer look"
+    static let showsSubtitle = true
+    static let headerFontName = "SeasonSerif-Regular-TRIAL"
+    static let headerFontFileName = "SeasonSerif-TRIAL-Regular"
+    static let headerFontFileExtension = "otf"
+    static let headerTopSpacing: CGFloat = 120
     static let headerSpacing: CGFloat = 8
     static let headerHorizontalPadding: CGFloat = 24
-    static let titleFontSize: CGFloat = 20
-    static let subtitleFontSize: CGFloat = 15
-    static let titleMinimumScale: CGFloat = 0.8
-    static let subtitleMinimumScale: CGFloat = 0.75
-    static let headerLineLimit = 1
+    static let titleFontSize: CGFloat = 24
+    static let subtitleFontSize: CGFloat = 17
+    static let titleColor = Color(red: 0.063, green: 0.063, blue: 0.063)
+    static let subtitleColor = Color(red: 0.38, green: 0.38, blue: 0.38)
+    static let titleMinimumScale: CGFloat = 0.0
+    static let subtitleMinimumScale: CGFloat = 0.0
+    static let headerLineLimit = 0
 
     static let backgroundImageName = "Background"
     static let pocketImageName = "Pocket 2"
@@ -186,163 +177,4 @@ enum WalletConfig {
         WalletCardLayout(lift: -20, rest: 10, rotation: 0, scale: 0.98, widthScale: 0.9),
         WalletCardLayout(lift: 12, rest: 12, rotation: 0, scale: 0.98, widthScale: 0.9)
     ]
-
-    static let settingsPanelTitle = "Wallet Config"
-    static let settingsPanelWidthRatio: CGFloat = 0.5
-    static let settingsPanelHeightRatio: CGFloat = 0.5
-    static let settingsIconName = "gearshape.fill"
-    static let settingsCloseIconName = "xmark"
-    static let settingsCopyIconName = "doc.on.doc"
-    static let settingsResetIconName = "arrow.counterclockwise"
-    static let settingsResetAllIconName = "arrow.clockwise"
-    static let settingsButtonSize: CGFloat = 42
-    static let settingsButtonPadding: CGFloat = 18
-    static let settingsOuterPadding: CGFloat = 10
-    static let settingsContentPadding: CGFloat = 12
-    static let settingsHeaderVerticalPadding: CGFloat = 10
-    static let settingsHeaderSpacing: CGFloat = 10
-    static let settingsRowSpacing: CGFloat = 8
-    static let settingsRowInnerSpacing: CGFloat = 6
-    static let settingsSectionSpacing: CGFloat = 8
-    static let settingsSectionHeaderFontSize: CGFloat = 13
-    static let settingsSliderSpacing: CGFloat = 6
-    static let settingsValueSpacing: CGFloat = 8
-    static let settingsValuePadding: CGFloat = 8
-    static let settingsCornerRadius: CGFloat = 14
-    static let settingsRowCornerRadius: CGFloat = 10
-    static let settingsValueCornerRadius: CGFloat = 8
-    static let settingsTitleFontSize: CGFloat = 15
-    static let settingsKeyFontSize: CGFloat = 12
-    static let settingsValueFontSize: CGFloat = 11
-    static let settingsTitleMinimumScale: CGFloat = 0.75
-    static let settingsKeyMinimumScale: CGFloat = 0.7
-    static let settingsShadowColor = Color.black.opacity(0.18)
-    static let settingsShadowRadius: CGFloat = 18
-    static let settingsShadowX: CGFloat = 0
-    static let settingsShadowY: CGFloat = 8
-    static let settingsRowPadding: CGFloat = 10
-    static let settingsRowBackground = Color.white.opacity(0.3)
-    static let settingsValueBackground = Color.white.opacity(0.28)
-    static let settingsValueLineLimit = 3
-    static let settingsButtonAccessibilityLabel = "Open wallet configuration"
-    static let settingsCloseAccessibilityLabel = "Close configuration"
-    static let settingsCopyAccessibilityLabel = "Copy value"
-    static let settingsResetAccessibilityLabel = "Reset value"
-    static let settingsResetAllAccessibilityLabel = "Reset all values"
-
-    static let settingsItems: [WalletConfigItem] = [
-        WalletConfigItem(name: "defaultResetFlipAngle", defaultValue: "0.0"),
-        WalletConfigItem(name: "defaultInitialCardScale", defaultValue: "1"),
-        WalletConfigItem(name: "defaultCardCount", defaultValue: "3"),
-        WalletConfigItem(name: "previewHorizontalPadding", defaultValue: "38"),
-        WalletConfigItem(name: "previewMaxWalletWidth", defaultValue: "320"),
-        WalletConfigItem(name: "mainMaxWalletWidth", defaultValue: "450"),
-        WalletConfigItem(name: "mainWalletHorizontalPadding", defaultValue: "40"),
-        WalletConfigItem(name: "mainWalletWidthScale", defaultValue: "0.9"),
-        WalletConfigItem(name: "title", defaultValue: "Welcome to digilocker"),
-        WalletConfigItem(name: "subtitle", defaultValue: "Use your Face ID to check out all your ID"),
-        WalletConfigItem(name: "headerTopSpacing", defaultValue: "80"),
-        WalletConfigItem(name: "headerSpacing", defaultValue: "8"),
-        WalletConfigItem(name: "headerHorizontalPadding", defaultValue: "24"),
-        WalletConfigItem(name: "titleFontSize", defaultValue: "20"),
-        WalletConfigItem(name: "subtitleFontSize", defaultValue: "15"),
-        WalletConfigItem(name: "titleMinimumScale", defaultValue: "0.8"),
-        WalletConfigItem(name: "subtitleMinimumScale", defaultValue: "0.75"),
-        WalletConfigItem(name: "headerLineLimit", defaultValue: "1"),
-        WalletConfigItem(name: "backgroundImageName", defaultValue: "Background"),
-        WalletConfigItem(name: "pocketImageName", defaultValue: "Pocket 2"),
-        WalletConfigItem(name: "firstCardFrontImageName", defaultValue: "Arav front 4"),
-        WalletConfigItem(name: "firstCardBackImageName", defaultValue: "Aadhar card"),
-        WalletConfigItem(name: "secondCardFrontImageName", defaultValue: "Voter ID"),
-        WalletConfigItem(name: "secondCardBackImageName", defaultValue: "Aadhar card"),
-        WalletConfigItem(name: "lastCardFrontImageName", defaultValue: "Aadhar card"),
-        WalletConfigItem(name: "lastCardBackImageName", defaultValue: "Voter ID"),
-        WalletConfigItem(name: "mainStackSpacing", defaultValue: "0"),
-        WalletConfigItem(name: "backgroundOffsetY", defaultValue: "-6"),
-        WalletConfigItem(name: "pocketWidthExtra", defaultValue: "2"),
-        WalletConfigItem(name: "pocketOffsetY", defaultValue: "44"),
-        WalletConfigItem(name: "pocketShadowColor", defaultValue: "black opacity 0.8"),
-        WalletConfigItem(name: "pocketShadowRadius", defaultValue: "4"),
-        WalletConfigItem(name: "pocketShadowX", defaultValue: "0"),
-        WalletConfigItem(name: "pocketShadowY", defaultValue: "-5"),
-        WalletConfigItem(name: "bottomPadding", defaultValue: "16"),
-        WalletConfigItem(name: "cardCornerRadius", defaultValue: "8"),
-        WalletConfigItem(name: "cardStrokeWidth", defaultValue: "2.5"),
-        WalletConfigItem(name: "isCardStrokeAnimationEnabled", defaultValue: "false"),
-        WalletConfigItem(name: "cardStrokeAnimationTriggersOnTilt", defaultValue: "true"),
-        WalletConfigItem(name: "cardStrokeTiltActivationAngle", defaultValue: "1.2"),
-        WalletConfigItem(name: "cardAnimatedStrokeWidth", defaultValue: "2"),
-        WalletConfigItem(name: "cardStrokeOpacity", defaultValue: "1.0"),
-        WalletConfigItem(name: "cardStrokeGlowWidth", defaultValue: "0"),
-        WalletConfigItem(name: "cardStrokeGlowBlur", defaultValue: "0"),
-        WalletConfigItem(name: "cardStrokeGlowOpacity", defaultValue: "0.0"),
-        WalletConfigItem(name: "cardStrokeGradientScale", defaultValue: "0.7"),
-        WalletConfigItem(name: "cardStrokeAnimationStartAngle", defaultValue: "0.0"),
-        WalletConfigItem(name: "cardStrokeAnimationEndAngle", defaultValue: "252.0"),
-        WalletConfigItem(name: "cardStrokeAnimationDuration", defaultValue: "1.5"),
-        WalletConfigItem(name: "cardStrokeAnimationRepeatCount", defaultValue: "1"),
-        WalletConfigItem(name: "cardStrokeAnimationAutoreverses", defaultValue: "false"),
-        WalletConfigItem(name: "cardExpandedBackgroundDelay", defaultValue: "0.75"),
-        WalletConfigItem(name: "cardExpandedBackgroundFadeDuration", defaultValue: "0.7"),
-        WalletConfigItem(name: "cardExpandedBackgroundOpacity", defaultValue: "0.5"),
-        WalletConfigItem(name: "cardExpandedBackgroundBlur", defaultValue: "32"),
-        WalletConfigItem(name: "cardExpandedBackgroundScale", defaultValue: "1.3"),
-        WalletConfigItem(name: "cardExpandedBackgroundCornerRadiusRatio", defaultValue: "0.5"),
-        WalletConfigItem(name: "isCardShaderEnabled", defaultValue: "true"),
-        WalletConfigItem(name: "cardShaderOpacity", defaultValue: "0.72"),
-        WalletConfigItem(name: "cardShaderBlur", defaultValue: "10"),
-        WalletConfigItem(name: "cardShaderWidthScale", defaultValue: "0.38"),
-        WalletConfigItem(name: "cardShaderHeightScale", defaultValue: "1.9"),
-        WalletConfigItem(name: "cardShaderRotationAngle", defaultValue: "24.0"),
-        WalletConfigItem(name: "cardShaderOffsetXRatio", defaultValue: "0.0"),
-        WalletConfigItem(name: "cardShaderOffsetYRatio", defaultValue: "0.0"),
-        WalletConfigItem(name: "cardShaderSweepStartXRatio", defaultValue: "-0.35"),
-        WalletConfigItem(name: "cardShaderSweepEndXRatio", defaultValue: "1.35"),
-        WalletConfigItem(name: "cardShaderSweepDuration", defaultValue: "1.15"),
-        WalletConfigItem(name: "cardShadowColor", defaultValue: "black opacity 0.22"),
-        WalletConfigItem(name: "cardShadowRadius", defaultValue: "20"),
-        WalletConfigItem(name: "cardShadowX", defaultValue: "-5"),
-        WalletConfigItem(name: "cardShadowY", defaultValue: "5"),
-        WalletConfigItem(name: "pocketZIndex", defaultValue: "10.0"),
-        WalletConfigItem(name: "selectedCardZIndex", defaultValue: "100.0"),
-        WalletConfigItem(name: "secondCardIndex", defaultValue: "1"),
-        WalletConfigItem(name: "collapsedRotation", defaultValue: "0.0"),
-        WalletConfigItem(name: "baseCardZIndexOffset", defaultValue: "0.0"),
-        WalletConfigItem(name: "springResponse", defaultValue: "0.45"),
-        WalletConfigItem(name: "springDamping", defaultValue: "0.69"),
-        WalletConfigItem(name: "springBlendDuration", defaultValue: "0.08"),
-        WalletConfigItem(name: "expandDelayStep", defaultValue: "0.07"),
-        WalletConfigItem(name: "collapseDelayStep", defaultValue: "0.07"),
-        WalletConfigItem(name: "autoExpandDelayNanoseconds", defaultValue: "500_000_000"),
-        WalletConfigItem(name: "punchDelayNanoseconds", defaultValue: "80_000_000"),
-        WalletConfigItem(name: "punchScale", defaultValue: "0.86"),
-        WalletConfigItem(name: "flipAngle", defaultValue: "180.0"),
-        WalletConfigItem(name: "openFlipAngle", defaultValue: "360.0"),
-        WalletConfigItem(name: "flipDuration", defaultValue: "0.4"),
-        WalletConfigItem(name: "flipBounce", defaultValue: "0.02"),
-        WalletConfigItem(name: "cardSwipeMinimumDistance", defaultValue: "28"),
-        WalletConfigItem(name: "selectedCardSpringResponse", defaultValue: "0.5"),
-        WalletConfigItem(name: "selectedCardSpringDamping", defaultValue: "0.8"),
-        WalletConfigItem(name: "selectedCardUp", defaultValue: "-60"),
-        WalletConfigItem(name: "selectedCardScale", defaultValue: "1.12"),
-        WalletConfigItem(name: "swipeSpringResponse", defaultValue: "0.6"),
-        WalletConfigItem(name: "swipeSpringDamping", defaultValue: "0.75"),
-        WalletConfigItem(name: "backFaceRotationAngle", defaultValue: "180.0"),
-        WalletConfigItem(name: "flipPerspective", defaultValue: "0.5"),
-        WalletConfigItem(name: "backVisibleStartAngle", defaultValue: "90.0"),
-        WalletConfigItem(name: "backVisibleEndAngle", defaultValue: "270.0"),
-        WalletConfigItem(name: "fullRotationAngle", defaultValue: "360.0"),
-        WalletConfigItem(name: "hiddenOpacity", defaultValue: "0.0"),
-        WalletConfigItem(name: "visibleOpacity", defaultValue: "1.0"),
-        WalletConfigItem(name: "gyroscopeNeutralAngle", defaultValue: "0.0"),
-        WalletConfigItem(name: "gyroscopeMaxTiltAngle", defaultValue: "4.5"),
-        WalletConfigItem(name: "gyroscopeMotionScale", defaultValue: "20.0"),
-        WalletConfigItem(name: "gyroscopeUpdateInterval", defaultValue: "1.0 / 60.0"),
-        WalletConfigItem(name: "gyroscopeResetDuration", defaultValue: "0.45"),
-        WalletConfigItem(name: "cardLayouts", defaultValue: "[-62/10/0/0.98/0.9, -20/10/0/0.98/0.9, 12/12/0/0.98/0.9]")
-    ]
-
-    static let settingsDefaultValues = Dictionary(
-        uniqueKeysWithValues: settingsItems.map { ($0.id, $0.defaultValue) }
-    )
 }

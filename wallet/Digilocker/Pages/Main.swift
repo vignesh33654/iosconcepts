@@ -15,7 +15,6 @@ struct Main: View {
 
     @State private var unlockState: FaceIDUnlockState = .idle
     @State private var bypassFaceID = true  // Face ID disabled
-    @State private var isShowingConfig = false
 
     var body: some View {
         GeometryReader { geometry in
@@ -39,44 +38,9 @@ struct Main: View {
                         unlockAfterFaceID()
                     }
                 }
-
-                settingsButton
-
-                if isShowingConfig {
-                    WalletConfigPopover {
-                        withAnimation(.smooth(duration: 0.2)) {
-                            isShowingConfig = false
-                        }
-                    }
-                    .frame(
-                        width: geometry.size.width * Config.settingsPanelWidthRatio,
-                        height: geometry.size.height * Config.settingsPanelHeightRatio
-                    )
-                    .transition(.move(edge: .leading).combined(with: .opacity))
-                    .zIndex(1000)
-                }
             }
-            .animation(.smooth(duration: 0.2), value: isShowingConfig)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-    }
-
-    private var settingsButton: some View {
-        Button {
-            withAnimation(.smooth(duration: 0.2)) {
-                isShowingConfig.toggle()
-            }
-        } label: {
-            Image(systemName: Config.settingsIconName)
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(.primary)
-                .frame(width: Config.settingsButtonSize, height: Config.settingsButtonSize)
-                .background(.regularMaterial)
-                .clipShape(Circle())
-        }
-        .padding(Config.settingsButtonPadding)
-        .accessibilityLabel(Config.settingsButtonAccessibilityLabel)
-        .zIndex(1001)
     }
 
     private func startFaceIDScan() {
