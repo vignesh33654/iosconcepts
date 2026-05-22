@@ -12,9 +12,14 @@ struct Main: View {
 
     private let frontCardImageName = Config.firstCardFrontImageName
     private let backCardImageName = Config.firstCardBackImageName
+    private let requiresFaceID: Bool
 
     @State private var unlockState: FaceIDUnlockState = .idle
-    @State private var bypassFaceID = true  // Face ID disabled
+
+    init(requiresFaceID: Bool = true) {
+        self.requiresFaceID = requiresFaceID
+        _unlockState = State(initialValue: requiresFaceID ? .idle : .unlocked)
+    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -26,10 +31,11 @@ struct Main: View {
                     width: cardWidth,
                     cardImageName: frontCardImageName,
                     backCardImageName: backCardImageName,
+                    isUnlocked: unlockState == .unlocked,
                     screenCenter: CGPoint(x: screenFrame.midX, y: screenFrame.midY)
                 )
 
-                if !bypassFaceID {
+                if requiresFaceID && unlockState != .unlocked {
                     FaceIDUnlockButton(
                         state: unlockState,
                         onAuthenticationStart: startFaceIDScan,
@@ -52,8 +58,14 @@ struct Main: View {
     }
 
     private func unlockAfterFaceID() {
-        withAnimation(.smooth(duration: 0.2)) {
-            unlockState = .unlocked
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(Config.faceIDSuccessAnimationDelay))
+
+            guard unlockState == .scanning else { return }
+
+            withAnimation(.smooth(duration: 0.2)) {
+                unlockState = .unlocked
+            }
         }
     }
 
@@ -67,5 +79,5 @@ struct Main: View {
 }
 
 #Preview {
-    Main()
+    Main(requiresFaceID: false)
 }

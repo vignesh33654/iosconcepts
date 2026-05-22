@@ -14,12 +14,14 @@ struct Wallet: View {
     let width: CGFloat
     let cardImageName: String
     let backCardImageName: String
+    let isUnlocked: Bool
     let screenCenter: CGPoint?
 
     init(
         width: CGFloat,
         cardImageName: String = WalletConfig.firstCardFrontImageName,
         backCardImageName: String = WalletConfig.firstCardBackImageName,
+        isUnlocked: Bool = true,
         screenCenter: CGPoint? = nil
     ) {
         FontRegistrationHelper.registerFont(
@@ -31,6 +33,7 @@ struct Wallet: View {
         self.width = width
         self.cardImageName = cardImageName
         self.backCardImageName = backCardImageName
+        self.isUnlocked = isUnlocked
         self.screenCenter = screenCenter
     }
 
@@ -128,13 +131,13 @@ struct Wallet: View {
         }
         .padding(.bottom, Config.bottomPadding)
 
-        .task {
-
-            try? await Task.sleep(
-                nanoseconds: Config.autoExpandDelayNanoseconds
-            )
-
-            guard !Task.isCancelled else { return }
+        .task(id: isUnlocked) {
+            guard isUnlocked else {
+                withAnimation(walletSpring) {
+                    isExpanded = false
+                }
+                return
+            }
 
             withAnimation(walletSpring) {
                 isExpanded = true
@@ -204,7 +207,7 @@ struct Wallet: View {
 
             yOffset: isExpanded
                 ? layout.lift
-                : layout.rest,
+                : collapsedYOffset(for: layout),
 
             bounceOffset: cardBounceOffsets[index],
 
@@ -525,6 +528,10 @@ struct Wallet: View {
     }
 
     // MARK: - Offset
+
+    private func collapsedYOffset(for layout: WalletCardLayout) -> CGFloat {
+        isUnlocked ? layout.rest : layout.lockedLift
+    }
 
     private func centerOffset(for index: Int) -> CGSize {
 

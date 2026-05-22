@@ -9,6 +9,7 @@ import SwiftUI
 
 struct WalletCardLayout {
     let lift: CGFloat
+    let lockedLift: CGFloat
     let rest: CGFloat
     let rotation: Double
     let scale: CGFloat

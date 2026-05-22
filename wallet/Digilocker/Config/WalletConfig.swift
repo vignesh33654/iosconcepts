@@ -108,6 +108,7 @@ enum WalletConfig {
     static let springBlendDuration = 0.08
     static let expandDelayStep = 0.07
     static let collapseDelayStep = 0.07
+    static let faceIDSuccessAnimationDelay = 0.7  // Wait for Face ID checkmark.
     static let autoExpandDelayNanoseconds: UInt64 = 500_000_000  // Auto-expand after 0.5s
     static let punchDelayNanoseconds: UInt64 = 80_000_000
     static let punchScale: CGFloat = 0.86
@@ -141,9 +142,9 @@ enum WalletConfig {
     static let gyroscopeUpdateInterval = 1.0 / 60.0
     static let gyroscopeResetDuration = 0.45
     static let cardLayouts: [WalletCardLayout] = [
-        WalletCardLayout(lift: -56, rest: 10, rotation: 0, scale: 0.98, widthScale: 0.9),
-        WalletCardLayout(lift: -22, rest: 10, rotation: 0, scale: 0.98, widthScale: 0.9),
-        WalletCardLayout(lift: 12, rest: 12, rotation: 0, scale: 0.98, widthScale: 0.9)
+        WalletCardLayout(lift: -56, lockedLift: 16, rest: 0, rotation: 0, scale: 0.98, widthScale: 0.9),
+        WalletCardLayout(lift: -22, lockedLift: 20, rest: 0, rotation: 0, scale: 0.98, widthScale: 0.9),
+        WalletCardLayout(lift: 12, lockedLift: 24, rest: 0, rotation: 0, scale: 0.98, widthScale: 0.9)
     ]
 
     // Full-screen tint that shifts to the selected card's identity colour.
