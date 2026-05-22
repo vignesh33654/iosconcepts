@@ -18,8 +18,8 @@ struct Wallet: View {
 
     init(
         width: CGFloat,
-        cardImageName: String = "Arav front",
-        backCardImageName: String = "Arav back",
+        cardImageName: String = WalletConfig.firstCardFrontImageName,
+        backCardImageName: String = WalletConfig.firstCardBackImageName,
         screenCenter: CGPoint? = nil
     ) {
         FontRegistrationHelper.registerFont(
@@ -234,7 +234,6 @@ struct Wallet: View {
             hiddenOpacity: Config.hiddenOpacity,
             visibleOpacity: Config.visibleOpacity,
 
-            borderColors: Config.cardAnimatedBorderColors,
             showsStroke: isExpanded && isSelected,
             appliesShadow: (isExpanded || !isTopWalletCard) && !isSelected,
             shaderTriggerID: cardShaderTriggerIDs[index],

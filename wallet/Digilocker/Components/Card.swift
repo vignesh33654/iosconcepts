@@ -42,7 +42,6 @@ struct WalletCardView: View {
     let fullRotationAngle: Double
     let hiddenOpacity: Double
     let visibleOpacity: Double
-    let borderColors: [Color]
     let showsStroke: Bool
     let appliesShadow: Bool
     let shaderTriggerID: Int
@@ -59,9 +58,7 @@ struct WalletCardView: View {
                 cornerRadius: cornerRadius,
                 shaderTriggerID: shaderTriggerID,
                 strokeWidth: strokeWidth,
-                borderColors: borderColors,
                 showsStroke: showsStroke,
-                showsAnimatedStrokeTrigger: shouldAnimateStroke,
                 appliesShadow: appliesShadow
             )
             .opacity(isShowingBack ? hiddenOpacity : visibleOpacity)
@@ -73,9 +70,7 @@ struct WalletCardView: View {
                 cornerRadius: cornerRadius,
                 shaderTriggerID: shaderTriggerID,
                 strokeWidth: strokeWidth,
-                borderColors: borderColors,
                 showsStroke: showsStroke,
-                showsAnimatedStrokeTrigger: shouldAnimateStroke,
                 appliesShadow: appliesShadow
             )
             .rotation3DEffect(.degrees(backFaceRotationAngle), axis: (x: 0, y: 1, z: 0))
@@ -133,21 +128,6 @@ struct WalletCardView: View {
                     onSwipe(horizontalDistance)
                 }
         )
-    }
-
-    private var shouldAnimateStroke: Bool {
-        if Config.cardStrokeAnimationTriggersOnTilt {
-            return isTiltedEnough
-        }
-
-        return showsStroke
-    }
-
-    private var isTiltedEnough: Bool {
-        guard isExpanded, isSelected else { return false }
-
-        return abs(gyroPitchAngle) >= Config.cardStrokeTiltActivationAngle
-            || abs(gyroRollAngle) >= Config.cardStrokeTiltActivationAngle
     }
 
     private var isShowingBack: Bool {
@@ -221,12 +201,9 @@ private struct CardImageView: View {
     let cornerRadius: CGFloat
     let shaderTriggerID: Int
     let strokeWidth: CGFloat
-    let borderColors: [Color]
     let showsStroke: Bool
-    let showsAnimatedStrokeTrigger: Bool
     let appliesShadow: Bool
 
-    @State private var showsAnimatedStroke = false
     @State private var showsExpandedBackground = false
 
     var body: some View {
@@ -265,13 +242,6 @@ private struct CardImageView: View {
                             cornerRadius: cornerRadius,
                             strokeWidth: strokeWidth
                         )
-                        .opacity(isAnimatedStrokeVisible ? Config.hiddenOpacity : Config.visibleOpacity)
-
-                        AnimatedCardStroke(
-                            cornerRadius: cornerRadius,
-                            colors: borderColors,
-                            isVisible: isAnimatedStrokeVisible
-                        )
                     }
                 }
                 .shadow(
@@ -280,9 +250,6 @@ private struct CardImageView: View {
                     x: cardShadowX,
                     y: cardShadowY
                 )
-                .task(id: showsAnimatedStrokeTrigger) {
-                    await updateAnimatedStrokeVisibility()
-                }
                 .task(id: showsStroke) {
                     await updateExpandedBackgroundVisibility()
                 }
@@ -291,10 +258,6 @@ private struct CardImageView: View {
 
     private var showsGyroscopeGhostImage: Bool {
         imageName == Config.firstCardFrontImageName
-    }
-
-    private var isAnimatedStrokeVisible: Bool {
-        Config.isCardStrokeAnimationEnabled && showsAnimatedStroke
     }
 
     private var cardShadowColor: Color {
@@ -315,22 +278,6 @@ private struct CardImageView: View {
 
     private var cardShadowY: CGFloat {
         showsStroke ? Config.expandedCardShadowY : Config.cardShadowY
-    }
-
-    private func updateAnimatedStrokeVisibility() async {
-        guard Config.isCardStrokeAnimationEnabled, showsAnimatedStrokeTrigger else {
-            showsAnimatedStroke = false
-            return
-        }
-
-        showsAnimatedStroke = true
-
-        let animationDuration = Config.cardStrokeAnimationDuration * Double(Config.cardStrokeAnimationRepeatCount)
-        let nanoseconds = UInt64(animationDuration * 1_000_000_000)
-        try? await Task.sleep(nanoseconds: nanoseconds)
-
-        guard !Task.isCancelled else { return }
-        showsAnimatedStroke = false
     }
 
     private func updateExpandedBackgroundVisibility() async {
@@ -491,77 +438,6 @@ private struct StaticCardStroke: View {
             .allowsHitTesting(false)
     }
 }
-
-private struct AnimatedCardStroke: View {
-    private typealias Config = WalletConfig
-
-    let cornerRadius: CGFloat
-    let colors: [Color]
-    let isVisible: Bool
-
-    @State private var rotationAngle = Config.cardStrokeAnimationStartAngle
-
-    var body: some View {
-        GeometryReader { proxy in
-            let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            let gradientSize = max(proxy.size.width, proxy.size.height) * Config.cardStrokeGradientScale
-
-            ZStack {
-                Color.clear
-                    .overlay {
-                        movingGradient(size: gradientSize)
-                            .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
-                    }
-                    .mask {
-                        shape.stroke(lineWidth: Config.cardStrokeGlowWidth)
-                    }
-                    .blur(radius: Config.cardStrokeGlowBlur)
-                    .opacity(Config.cardStrokeGlowOpacity)
-
-                Color.clear
-                    .overlay {
-                        movingGradient(size: gradientSize)
-                            .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
-                    }
-                    .mask {
-                        shape.strokeBorder(lineWidth: Config.cardAnimatedStrokeWidth)
-                    }
-                    .opacity(Config.cardStrokeOpacity)
-            }
-            .frame(width: proxy.size.width, height: proxy.size.height)
-        }
-        .opacity(isVisible ? Config.visibleOpacity : Config.hiddenOpacity)
-        .allowsHitTesting(false)
-        .task(id: isVisible) {
-            guard isVisible else {
-                rotationAngle = Config.cardStrokeAnimationStartAngle
-                return
-            }
-
-            rotationAngle = Config.cardStrokeAnimationStartAngle
-            withAnimation(
-                .linear(duration: Config.cardStrokeAnimationDuration)
-                    .repeatCount(
-                        Config.cardStrokeAnimationRepeatCount,
-                        autoreverses: Config.cardStrokeAnimationAutoreverses
-                    )
-            ) {
-                rotationAngle = Config.cardStrokeAnimationEndAngle
-            }
-        }
-    }
-
-    private func movingGradient(size: CGFloat) -> some View {
-        LinearGradient(
-            colors: colors,
-            startPoint: Config.cardStrokeGradientStartPoint,
-            endPoint: Config.cardStrokeGradientEndPoint
-        )
-        .frame(width: size, height: size)
-        .rotationEffect(.degrees(rotationAngle))
-    }
-}
-
 
 struct CardCenterPreferenceKey: PreferenceKey {
     static var defaultValue: [Int: CGPoint] = [:]

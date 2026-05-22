@@ -11,7 +11,7 @@ struct Main: View {
     private typealias Config = WalletConfig
 
     private let frontCardImageName = Config.firstCardFrontImageName
-    private let backCardImageName = "Arav back"
+    private let backCardImageName = Config.firstCardBackImageName
 
     @State private var unlockState: FaceIDUnlockState = .idle
     @State private var bypassFaceID = true  // Face ID disabled

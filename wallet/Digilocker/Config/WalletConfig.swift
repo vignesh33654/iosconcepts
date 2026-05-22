@@ -37,7 +37,7 @@ enum WalletConfig {
     static let backgroundImageName = "Background"
     static let pocketImageName = "Pocket 2"
     static let firstCardFrontImageName = "Arav front 4"
-    static let firstCardBackImageName = "Aadhar card"
+    static let firstCardBackImageName = "Arav back"
     static let secondCardFrontImageName = "Voter ID"
     static let secondCardBackImageName = "Aadhar card"
     static let lastCardFrontImageName = "Aadhar card"
@@ -54,24 +54,6 @@ enum WalletConfig {
     static let bottomPadding: CGFloat = 16
     static let cardCornerRadius: CGFloat = 10
     static let cardStrokeWidth: CGFloat = 2.5
-    static let cardStaticStrokeGradientStartPoint = UnitPoint.topLeading
-    static let cardStaticStrokeGradientEndPoint = UnitPoint.bottomTrailing
-    static let isCardStrokeAnimationEnabled = false
-    static let cardStrokeAnimationTriggersOnTilt = true
-    static let cardStrokeTiltActivationAngle = 1.2
-    static let cardAnimatedStrokeWidth: CGFloat = 2
-    static let cardStrokeOpacity = 1.0
-    static let cardStrokeGlowWidth: CGFloat = 0
-    static let cardStrokeGlowBlur: CGFloat = 0
-    static let cardStrokeGlowOpacity = 0.0
-    static let cardStrokeGradientScale: CGFloat = 0.7
-    static let cardStrokeGradientStartPoint = UnitPoint.leading
-    static let cardStrokeGradientEndPoint = UnitPoint.trailing
-    static let cardStrokeAnimationStartAngle = 0.0
-    static let cardStrokeAnimationEndAngle = 252.0
-    static let cardStrokeAnimationDuration = 1.5
-    static let cardStrokeAnimationRepeatCount = 1
-    static let cardStrokeAnimationAutoreverses = false
     static let isCardExpandedBackgroundAnimationEnabled = true
     static let cardExpandedBackgroundDelay = 0.75
     static let cardExpandedBackgroundFadeDuration = 0.7
@@ -118,10 +100,8 @@ enum WalletConfig {
     static let expandedCardShadowX: CGFloat = 0
     static let expandedCardShadowY: CGFloat = 0
     static let pocketZIndex = 10.0
-    static let selectedCardZIndex = 100.0
     static let secondCardIndex = 1
     static let collapsedRotation = 0.0
-    static let baseCardZIndexOffset = 0.0
 
     static let springResponse = 0.45
     static let springDamping = 0.69
@@ -155,18 +135,6 @@ enum WalletConfig {
     static let fullRotationAngle = 360.0
     static let hiddenOpacity = 0.0
     static let visibleOpacity = 1.0
-    static let cardBorderColors = [
-        Color.white,
-        Color(red: 0.82, green: 0.82, blue: 0.82)
-    ]
-    static let cardAnimatedBorderColors = [
-        Color.clear,
-        Color.clear,
-        Color(red: 1.0, green: 0.431, blue: 0.0),
-        Color(red: 1.0, green: 0.431, blue: 0.0),
-        Color.clear,
-        Color.clear
-    ]
     static let gyroscopeNeutralAngle = 0.0
     static let gyroscopeMaxTiltAngle = 4.5
     static let gyroscopeMotionScale = 20.0
@@ -187,5 +155,5 @@ enum WalletConfig {
     ]
     static let cardThemeBottomOpacity: Double = 0.08   // ← tint strength at bottom
     static let cardThemeTopOpacity: Double = 0.24      // ← tint strength at top
-    static let cardThemeFadeDuration: Double = 0.35    // ← fade speed in/out
+    static let cardThemeFadeDuration: Double = 0.50   // ← fade speed in/out
 }
