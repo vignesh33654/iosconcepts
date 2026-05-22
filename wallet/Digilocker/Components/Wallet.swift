@@ -61,16 +61,20 @@ struct Wallet: View {
     @State private var cardShaderTriggerIDs = Array(repeating: 0, count: Config.defaultCardCount)
 
     var body: some View {
-        VStack(spacing: Config.mainStackSpacing) {
+        ZStack {
+            WalletThemeBackground(selectedCardIndex: selectedCardIndex)
 
-            Spacer()
-                .frame(height: Config.headerTopSpacing)
+            VStack(spacing: Config.mainStackSpacing) {
 
-            header
+                Spacer()
+                    .frame(height: Config.headerTopSpacing)
 
-            Spacer()
+                header
 
-            walletContent
+                Spacer()
+
+                walletContent
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -571,6 +575,35 @@ struct Wallet: View {
                 .resizable()
                 .scaledToFit()
         }
+    }
+}
+
+private struct WalletThemeBackground: View {
+    private typealias Config = WalletConfig
+
+    let selectedCardIndex: Int?
+
+    var body: some View {
+        ZStack {
+            ForEach(0..<Config.defaultCardCount, id: \.self) { index in
+                LinearGradient(
+                    colors: [
+                        themeColor(for: index).opacity(Config.cardThemeTopOpacity),
+                        themeColor(for: index).opacity(Config.cardThemeBottomOpacity)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .opacity(selectedCardIndex == index ? Config.visibleOpacity : Config.hiddenOpacity)
+            }
+        }
+        .animation(.easeInOut(duration: Config.cardThemeFadeDuration), value: selectedCardIndex)
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
+    }
+
+    private func themeColor(for index: Int) -> Color {
+        Config.cardThemeColors[index] ?? .clear
     }
 }
 
