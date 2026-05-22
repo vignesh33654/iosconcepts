@@ -15,7 +15,7 @@ struct GyroscopeHolographicGhostImage: View {
     private static let afterImageName = "After"
     private static let maxWidth: CGFloat = 70
     private static let trailingPadding: CGFloat = 12
-    private static let bottomPadding: CGFloat = 48
+    private static let bottomPadding: CGFloat = 20
     private static let beforeOpacity = 0.35
     private static let afterMaxOpacity = 1.0
     private static let tiltScale: CGFloat = 2.0
@@ -43,6 +43,18 @@ struct GyroscopeHolographicGhostImage: View {
     private static let smoothstepExponentMultiplier: CGFloat = 2
     fileprivate static let previewBackgroundOpacity = 0.08
 
+    private static let foilColors: [Color] = [
+        Color(hue: 0.92, saturation: 0.42, brightness: 1.0),  // pink
+        Color(hue: 0.70, saturation: 0.40, brightness: 1.0),  // violet
+        Color(hue: 0.55, saturation: 0.38, brightness: 1.0),  // soft blue
+        Color(hue: 0.13, saturation: 0.40, brightness: 1.0),  // warm gold
+        Color(hue: 0.92, saturation: 0.42, brightness: 1.0),  // back to pink (loops cleanly)
+    ]
+    private static let foilBaseOpacity: Double = 0.04
+    private static let foilTiltOpacityScale: Double = 0.35  // was 0.55 — calmer at full tilt
+    private static let foilShiftScale: Double = 0.5          // was 0.65 — slower spectrum drift
+    private static let sheenOpacity: Double = 0.10           // was 0.18 — gentler highlight
+
     @State private var tilt = CGSize.zero
     @State private var revealProgress: CGFloat = Self.easingStart
 
@@ -61,6 +73,14 @@ struct GyroscopeHolographicGhostImage: View {
 
                     exactImage(afterImage)
                         .opacity(Self.afterMaxOpacity * naturalRevealProgress)
+
+                    ZStack {
+                        holographicFoil
+                        metallicSheen
+                    }
+                    .mask {
+                        exactImage(afterImage)
+                    }
                 }
                 .frame(width: imageWidth)
                 .rotation3DEffect(
@@ -80,6 +100,37 @@ struct GyroscopeHolographicGhostImage: View {
         .onDisappear {
             stopGyroscope()
         }
+    }
+
+    // Rainbow foil: diagonal gradient whose start/end shift laterally with tilt,
+    // so the spectrum drifts across the image like a holographic sticker.
+    private var holographicFoil: some View {
+        let shift = Double(tilt.width) * Self.foilShiftScale
+        return LinearGradient(
+            colors: Self.foilColors,
+            startPoint: UnitPoint(x: shift, y: 0),
+            endPoint: UnitPoint(x: 1 + shift, y: 1)
+        )
+        .blendMode(.softLight)
+        .opacity(Self.foilBaseOpacity + abs(Double(tilt.width)) * Self.foilTiltOpacityScale)
+        .allowsHitTesting(false)
+    }
+
+    // Narrow white band that travels with tilt — the "polished metal" specular highlight.
+    private var metallicSheen: some View {
+        let center = 0.5 + Double(tilt.width) * 0.4
+        return LinearGradient(
+            stops: [
+                .init(color: .white.opacity(0), location: 0),
+                .init(color: .white.opacity(0.0), location: 0.5),
+                .init(color: .white.opacity(0), location: 1),
+            ],
+            startPoint: UnitPoint(x: center - 0.3, y: 0),
+            endPoint: UnitPoint(x: center + 0.3, y: 1)
+        )
+        .blendMode(.screen)
+        .opacity(Self.sheenOpacity * abs(Double(tilt.width)))
+        .allowsHitTesting(false)
     }
 
     private var naturalRevealProgress: CGFloat {

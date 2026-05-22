@@ -173,8 +173,19 @@ enum WalletConfig {
     static let gyroscopeUpdateInterval = 1.0 / 60.0
     static let gyroscopeResetDuration = 0.45
     static let cardLayouts: [WalletCardLayout] = [
-        WalletCardLayout(lift: -62, rest: 10, rotation: 0, scale: 0.98, widthScale: 0.9),
-        WalletCardLayout(lift: -20, rest: 10, rotation: 0, scale: 0.98, widthScale: 0.9),
+        WalletCardLayout(lift: -56, rest: 10, rotation: 0, scale: 0.98, widthScale: 0.9),
+        WalletCardLayout(lift: -22, rest: 10, rotation: 0, scale: 0.98, widthScale: 0.9),
         WalletCardLayout(lift: 12, rest: 12, rotation: 0, scale: 0.98, widthScale: 0.9)
     ]
+
+    // Full-screen tint that shifts to the selected card's identity colour.
+    // Each layer fades in/out independently so switching cards cross-fades cleanly.
+    static let cardThemeColors: [Int: Color] = [
+        0: Color(red: 0.212, green: 0.667, blue: 0.953),  // Arav card tint
+        1: Color(red: 0.35, green: 0.75, blue: 0.55),  // fresh teal  — Voter ID   ← adjust
+        2: Color(red: 1.0, green: 0.447, blue: 0.098),  // Aadhar card tint
+    ]
+    static let cardThemeBottomOpacity: Double = 0.08   // ← tint strength at bottom
+    static let cardThemeTopOpacity: Double = 0.24      // ← tint strength at top
+    static let cardThemeFadeDuration: Double = 0.35    // ← fade speed in/out
 }
