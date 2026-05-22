@@ -108,7 +108,7 @@ enum WalletConfig {
     static let springBlendDuration = 0.08
     static let expandDelayStep = 0.07
     static let collapseDelayStep = 0.07
-    static let faceIDSuccessAnimationDelay = 0.7  // Wait for Face ID checkmark.
+    static let faceIDSuccessAnimationDelay = 1.0  // Wait for Face ID checkmark.
     static let autoExpandDelayNanoseconds: UInt64 = 500_000_000  // Auto-expand after 0.5s
     static let punchDelayNanoseconds: UInt64 = 80_000_000
     static let punchScale: CGFloat = 0.86
