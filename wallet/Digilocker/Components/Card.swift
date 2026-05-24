@@ -14,6 +14,7 @@ struct WalletCardView: View {
 
     @State private var gyroPitchAngle = Config.gyroscopeNeutralAngle
     @State private var gyroRollAngle = Config.gyroscopeNeutralAngle
+    @State private var shaderNudgeOffset = CGSize.zero
 
     #if !targetEnvironment(simulator)
     private let motionManager = CMMotionManager()
@@ -101,7 +102,10 @@ struct WalletCardView: View {
         .offset(y: yOffset + bounceOffset)
         .scaleEffect(displayScale)
         .rotationEffect(.degrees(isSelected ? 0 : rotation))
-        .offset(x: selectedOffset.width, y: selectedOffset.height)
+        .offset(
+            x: selectedOffset.width + shaderNudgeOffset.width,
+            y: selectedOffset.height + shaderNudgeOffset.height
+        )
         .zIndex(zIndex)
         .allowsHitTesting(isExpanded)
         .onAppear {
@@ -112,6 +116,9 @@ struct WalletCardView: View {
         }
         .onChange(of: isSelected) { _, isSelected in
             isSelected ? startGyroscope() : stopGyroscope()
+        }
+        .task(id: shaderTriggerID) {
+            await runShaderNudge()
         }
         .onTapGesture(perform: onTap)
         .simultaneousGesture(
@@ -137,6 +144,29 @@ struct WalletCardView: View {
             backVisibleStartAngle: backVisibleStartAngle,
             backVisibleEndAngle: backVisibleEndAngle
         )
+    }
+
+    @MainActor
+    private func runShaderNudge() async {
+        shaderNudgeOffset = .zero
+
+        guard Config.isCardShaderEnabled, shaderTriggerID > 0 else { return }
+
+        withAnimation(.easeOut(duration: Config.cardShaderNudgeDuration)) {
+            shaderNudgeOffset = CGSize(
+                width: Config.cardShaderNudgeX,
+                height: Config.cardShaderNudgeY
+            )
+        }
+
+        let nanoseconds = UInt64(Config.cardShaderNudgeDuration * 1_000_000_000)
+        try? await Task.sleep(nanoseconds: nanoseconds)
+
+        guard !Task.isCancelled else { return }
+
+        withAnimation(.smooth(duration: Config.cardShaderNudgeReturnDuration)) {
+            shaderNudgeOffset = .zero
+        }
     }
 
     private func updateGyroscopeState() {

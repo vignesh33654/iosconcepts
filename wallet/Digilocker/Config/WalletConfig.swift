@@ -132,6 +132,10 @@ enum WalletConfig {
     static let cardBounceSpringResponse = 0.5
     static let cardBounceSpringDamping = 0.35
     static let cardBounceDelayStep = 0.05
+    static let walletReturnDipOffset: CGFloat = 8
+    static let walletReturnDipDelay: Double = 0.30
+    static let walletReturnSpringResponse = 0.82
+    static let walletReturnSpringDamping = 0.40
     static let selectedCardScale: CGFloat = 1.12
     static let swipeSpringResponse = 0.6
     static let swipeSpringDamping = 0.75

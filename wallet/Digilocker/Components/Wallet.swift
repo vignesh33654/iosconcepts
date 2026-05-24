@@ -69,6 +69,7 @@ struct Wallet: View {
     @State private var cardBounceOffsets: [CGFloat] = Array(repeating: 0, count: Config.defaultCardCount)
     @State private var cardShaderTriggerIDs = Array(repeating: 0, count: Config.defaultCardCount)
     @State private var isCardNameVisible = false
+    @State private var walletReturnYOffset: CGFloat = 0
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -84,6 +85,7 @@ struct Wallet: View {
                 Spacer()
 
                 walletContent
+                    .offset(y: walletReturnYOffset)
             }
             .zIndex(Config.cardStackZIndex)
 
@@ -413,6 +415,27 @@ struct Wallet: View {
         }
     }
 
+    @MainActor
+    private func runWalletReturnDip() async {
+        try? await Task.sleep(nanoseconds: UInt64(Config.walletReturnDipDelay * 1_000_000_000))
+
+        guard !Task.isCancelled, selectedCardIndex == nil else { return }
+
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+
+        withTransaction(transaction) {
+            walletReturnYOffset = Config.walletReturnDipOffset
+        }
+
+        withAnimation(.spring(
+            response: Config.walletReturnSpringResponse,
+            dampingFraction: Config.walletReturnSpringDamping
+        )) {
+            walletReturnYOffset = 0
+        }
+    }
+
     // MARK: - Select Card
 
     private func selectCard(index: Int) {
@@ -441,6 +464,10 @@ struct Wallet: View {
 
             withAnimation(spring) {
                 selectedCardIndex = nil
+            }
+
+            Task { @MainActor in
+                await runWalletReturnDip()
             }
 
             let dismissedIndex = index
