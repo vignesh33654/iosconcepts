@@ -30,6 +30,12 @@ struct Wallet: View {
             postScriptName: Config.headerFontName
         )
 
+        FontRegistrationHelper.registerFont(
+            fileName: Config.cardNameFontFileName,
+            fileExtension: Config.cardNameFontFileExtension,
+            postScriptName: Config.cardNameFontName
+        )
+
         self.width = width
         self.cardImageName = cardImageName
         self.backCardImageName = backCardImageName
@@ -62,9 +68,10 @@ struct Wallet: View {
     @State private var cardBaseCenters: [Int: CGPoint] = [:]
     @State private var cardBounceOffsets: [CGFloat] = Array(repeating: 0, count: Config.defaultCardCount)
     @State private var cardShaderTriggerIDs = Array(repeating: 0, count: Config.defaultCardCount)
+    @State private var isCardNameVisible = false
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             WalletThemeBackground(selectedCardIndex: selectedCardIndex)
 
             VStack(spacing: Config.mainStackSpacing) {
@@ -78,8 +85,35 @@ struct Wallet: View {
 
                 walletContent
             }
+            .zIndex(Config.cardStackZIndex)
+
+            cardNameOverlay
+                .zIndex(Config.cardNameZIndex)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .task(id: selectedCardIndex, revealCardNameAfterDelay)
+    }
+
+    // MARK: - Card Name Overlay
+
+    private var cardNameOverlay: some View {
+        let isShowing = selectedCardIndex != nil && isCardNameVisible
+        let name = selectedCardIndex.map { Config.cardNames[$0] } ?? ""
+        let color = selectedCardIndex.flatMap { Config.cardThemeColors[$0] } ?? .clear
+
+        return Text(name)
+            .font(.custom(Config.cardNameFontName, size: Config.cardNameFontSize))
+            .tracking(Config.cardNameTracking)
+            .foregroundStyle(color)
+            .opacity(isShowing ? 1 : 0)
+            .offset(x: 0, y: isShowing ? 0 : Config.cardNameStartYOffset)
+            .animation(
+                .easeInOut(duration: Config.cardNameRevealDuration),
+                value: isCardNameVisible
+            )
+            .frame(maxWidth: .infinity)
+            .padding(.top, Config.cardNameTopPadding)
+            .allowsHitTesting(false)
     }
 
     // MARK: - Header
@@ -116,6 +150,7 @@ struct Wallet: View {
                 .allowsHitTesting(false)
 
             cardStack
+                .zIndex(Config.cardStackZIndex)
 
             image(named: Config.pocketImageName)
                 .frame(width: width + Config.pocketWidthExtra)
@@ -354,15 +389,41 @@ struct Wallet: View {
         }
     }
 
+    // MARK: - Card Name Reveal
+
+    @MainActor
+    private func revealCardNameAfterDelay() async {
+        hideCardNameImmediately()
+
+        guard selectedCardIndex != nil else { return }
+
+        try? await Task.sleep(nanoseconds: UInt64(Config.cardNameRevealDelay * 1_000_000_000))
+
+        guard !Task.isCancelled, selectedCardIndex != nil else { return }
+
+        isCardNameVisible = true
+    }
+
+    private func hideCardNameImmediately() {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+
+        withTransaction(transaction) {
+            isCardNameVisible = false
+        }
+    }
+
     // MARK: - Select Card
 
     private func selectCard(index: Int) {
 
         guard isExpanded else { return }
 
+        hideCardNameImmediately()
+
         let spring = Animation.spring(
-            response: 0.45,
-            dampingFraction: 0.88
+            response: Config.selectedCardSpringResponse,
+            dampingFraction: Config.selectedCardSpringDamping
         )
 
         // CLOSE CARD

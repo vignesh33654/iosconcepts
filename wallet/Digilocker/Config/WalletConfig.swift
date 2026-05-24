@@ -17,8 +17,8 @@ enum WalletConfig {
     static let mainWalletHorizontalPadding: CGFloat = 40
     static let mainWalletWidthScale: CGFloat = 0.9
 
-    static let title = "your wallet, reimagined"
-    static let subtitle = "tap a card to take a closer look"
+    static let title = ""
+    static let subtitle = ""
     static let showsSubtitle = true
     static let headerFontName = "SeasonSerif-Regular-TRIAL"
     static let headerFontFileName = "SeasonSerif-TRIAL-Regular"
@@ -76,7 +76,7 @@ enum WalletConfig {
     ]
     static let isCardShaderEnabled = true
     static let cardShaderOpacity = 0.72
-    static let cardShaderBlur: CGFloat = 10
+    static let cardShaderBlur: CGFloat = 24
     static let cardShaderWidthScale: CGFloat = 0.38
     static let cardShaderHeightScale: CGFloat = 1.9
     static let cardShaderRotationAngle = 24.0
@@ -85,9 +85,15 @@ enum WalletConfig {
     static let cardShaderSweepStartXRatio: CGFloat = -0.35
     static let cardShaderSweepEndXRatio: CGFloat = 1.35
     static let cardShaderSweepDuration = 1.15
+    static let cardShaderNudgeX: CGFloat = 3
+    static let cardShaderNudgeY: CGFloat = -2
+    static let cardShaderNudgeDuration = 0.16
+    static let cardShaderNudgeReturnDuration = 0.45
     static let cardShaderGradientStops: [Gradient.Stop] = [
         Gradient.Stop(color: .white.opacity(0), location: 0),
-        Gradient.Stop(color: .white.opacity(0.95), location: 0.5),
+        Gradient.Stop(color: .white.opacity(0.28), location: 0.34),
+        Gradient.Stop(color: .white.opacity(0.86), location: 0.5),
+        Gradient.Stop(color: .white.opacity(0.28), location: 0.66),
         Gradient.Stop(color: .white.opacity(0), location: 1)
     ]
     static let cardShadowColor = Color.black.opacity(0.22)
@@ -157,4 +163,18 @@ enum WalletConfig {
     static let cardThemeBottomOpacity: Double = 0.08   // ← tint strength at bottom
     static let cardThemeTopOpacity: Double = 0.24      // ← tint strength at top
     static let cardThemeFadeDuration: Double = 0.50   // ← fade speed in/out
+
+    // Card name overlay (appears above the selected card)
+    static let cardNames: [String] = ["PAN", "VOTER ID", "AADHAR"]
+    static let cardNameFontName = "RalewayDots-Regular"
+    static let cardNameFontFileName = "RalewayDots-Regular"
+    static let cardNameFontFileExtension = "ttf"
+    static let cardNameFontSize: CGFloat = 64
+    static let cardNameTopPadding: CGFloat = 152
+    static let cardNameRevealDelay: Double = 0.4
+    static let cardNameRevealDuration: Double = 0.3
+    static let cardNameStartYOffset: CGFloat = 18
+    static let cardNameTracking: CGFloat = 1.0
+    static let cardNameZIndex = 2.0
+    static let cardStackZIndex = 3.0
 }
