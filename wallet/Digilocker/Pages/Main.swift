@@ -44,6 +44,9 @@ struct Main: View {
                         unlockAfterFaceID()
                     }
                 }
+
+                TopHeader()
+                    .frame(maxWidth: .infinity)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
