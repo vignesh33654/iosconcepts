@@ -1,0 +1,122 @@
+import SwiftUI
+import SceneKit
+import UIKit
+
+// Parked panorama renderer. Rename back to `.swift` and reconnect config values when needed.
+struct PanoramaView: UIViewRepresentable {
+    var imageName: String
+
+    func makeUIView(context: Context) -> SCNView {
+        let view = SCNView()
+        configure(view)
+        updateScene(for: view)
+        return view
+    }
+
+    func updateUIView(_ view: SCNView, context: Context) {
+        configure(view)
+        updateScene(for: view)
+    }
+
+    private func configure(_ view: SCNView) {
+        view.allowsCameraControl = true
+        view.backgroundColor = .black
+        view.isUserInteractionEnabled = true
+        view.contentScaleFactor = view.traitCollection.displayScale
+        view.antialiasingMode = .multisampling4X
+        view.preferredFramesPerSecond = 60
+        view.defaultCameraController.maximumVerticalAngle = 80
+        view.defaultCameraController.minimumVerticalAngle = -80
+        view.defaultCameraController.inertiaEnabled = true
+    }
+
+    private func updateScene(for view: SCNView) {
+        let sceneSetup = makeScene(imageName: imageName)
+        view.scene = sceneSetup.scene
+        view.pointOfView = sceneSetup.cameraNode
+    }
+
+    private func makeScene(imageName: String) -> (scene: SCNScene, cameraNode: SCNNode) {
+        let scene = SCNScene()
+
+        let sphere = SCNSphere(radius: 10)
+        sphere.segmentCount = 192
+
+        let material = SCNMaterial()
+        material.diffuse.contents = UIImage(named: imageName) ?? placeholderImage(named: imageName)
+        material.diffuse.magnificationFilter = .linear
+        material.diffuse.minificationFilter = .linear
+        material.diffuse.mipFilter = .none
+        material.diffuse.maxAnisotropy = 16
+        material.isDoubleSided = true
+        material.cullMode = .front
+        material.lightingModel = .constant
+        sphere.firstMaterial = material
+
+        let sphereNode = SCNNode(geometry: sphere)
+        sphereNode.scale = SCNVector3(1, 1, -1)
+        scene.rootNode.addChildNode(sphereNode)
+
+        let cameraNode = SCNNode()
+        cameraNode.camera = SCNCamera()
+        cameraNode.position = SCNVector3(0, 0, 0)
+        cameraNode.camera?.fieldOfView = 95
+        scene.rootNode.addChildNode(cameraNode)
+
+        return (scene, cameraNode)
+    }
+
+    private func placeholderImage(named imageName: String) -> UIImage {
+        let size = CGSize(width: 2048, height: 1024)
+        let renderer = UIGraphicsImageRenderer(size: size)
+
+        return renderer.image { context in
+            let cgContext = context.cgContext
+            let colors = [
+                UIColor(red: 0.05, green: 0.05, blue: 0.07, alpha: 1).cgColor,
+                UIColor(red: 0.16, green: 0.10, blue: 0.07, alpha: 1).cgColor
+            ] as CFArray
+
+            guard let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors, locations: [0, 1]) else {
+                return
+            }
+
+            cgContext.drawLinearGradient(
+                gradient,
+                start: CGPoint(x: 0, y: 0),
+                end: CGPoint(x: size.width, y: size.height),
+                options: []
+            )
+
+            UIColor.white.withAlphaComponent(0.18).setStroke()
+            cgContext.setLineWidth(2)
+            for x in stride(from: 0, through: size.width, by: 256) {
+                cgContext.move(to: CGPoint(x: x, y: 0))
+                cgContext.addLine(to: CGPoint(x: x, y: size.height))
+            }
+            for y in stride(from: 0, through: size.height, by: 128) {
+                cgContext.move(to: CGPoint(x: 0, y: y))
+                cgContext.addLine(to: CGPoint(x: size.width, y: y))
+            }
+            cgContext.strokePath()
+
+            let titleAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 72, weight: .semibold),
+                .foregroundColor: UIColor.white
+            ]
+            let subtitleAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 44, weight: .medium),
+                .foregroundColor: UIColor.white.withAlphaComponent(0.68)
+            ]
+
+            "Missing panorama".draw(
+                at: CGPoint(x: 120, y: 388),
+                withAttributes: titleAttributes
+            )
+            imageName.draw(
+                at: CGPoint(x: 124, y: 480),
+                withAttributes: subtitleAttributes
+            )
+        }
+    }
+}

@@ -63,5 +63,6 @@ WindowGroup {
 
 - Don't over-engineer — no abstractions or patterns beyond what's asked
 - Styling and positioning live in the component file, not the parent
+- Use clear config names like `padding`, `margin`, `gap`, `width`, and `height`; avoid repeating the concept name in every property
 - Add short inline comments only where a value is meant to be tweaked
 - Keep responses short and direct
