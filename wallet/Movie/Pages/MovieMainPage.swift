@@ -1,96 +1,166 @@
 import SwiftUI
 
 struct MovieMainPage: View {
+    // MARK: - Config
+
+    private enum Config {
+        enum Title {
+            static let fontSize: CGFloat = 17
+            static let topPadding: CGFloat = 49
+            static let bottomPadding: CGFloat = 92
+        }
+
+        enum OpenButton {
+            static let diameter: CGFloat = 60
+            static let fontSize: CGFloat = 16
+            static let trailing: CGFloat = 42
+            static let bottom: CGFloat = 38
+        }
+
+        enum CloseButton {
+            static let diameter: CGFloat = 38
+            static let iconSize: CGFloat = 13
+            static let backgroundOpacity: Double = 0.42
+            static let top: CGFloat = 42
+            static let trailing: CGFloat = 22
+        }
+
+        enum Flash {
+            static let color = Color(red: 1.0, green: 0.96, blue: 0.9)
+            static let peak: Double = 0.9
+        }
+
+        // How the seat map is pulled into the screen. Drop `blur` to 0 if any lag.
+        enum SeatMap {
+            static let zoom: CGFloat = 1.6
+            static let blur: CGFloat = 6
+        }
+
+        enum Timing {
+            static let revealIn: Double = 0.2
+            static let warpIn: Double = 0.8
+            static let warpOut: Double = 0.6
+            static let revealOut: Double = 0.4
+            static let revealOutDelay: Double = 0.15
+        }
+    }
+
+    // MARK: - State
+
     @State private var selectedSeatIDs: Set<String> = []
     @State private var showThreeDPreview = false
+    @State private var warpProgress: CGFloat = 0
     private let config = MovieConfig()
+
+    // MARK: - Body
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             Color.black
                 .ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                Text("Book your ticket")
-                    .font(.system(size: 17, weight: .regular))
-                    .foregroundStyle(.white)
-                    .padding(.top, 49)
-                    .padding(.bottom, 92)
-
-                SeatMapView(selectedSeatIDs: $selectedSeatIDs, config: config)
-
-                Spacer(minLength: 0)
+            if showThreeDPreview {
+                PanoramaView(imageName: config.theatreImageName)
+                    .ignoresSafeArea()
+                    .transition(.opacity)
             }
-            .ignoresSafeArea(edges: .horizontal)
 
-            Button {
-                withAnimation(.easeInOut(duration: 0.25)) {
-                    showThreeDPreview = true
-                }
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(config.previewButtonFillColor)
-                        .frame(width: 60, height: 60)
+            seatMap
+                .scaleEffect(1 + warpProgress * Config.SeatMap.zoom)
+                .blur(radius: warpProgress * Config.SeatMap.blur)
+                .opacity(Double(1 - warpProgress))
+                .allowsHitTesting(!showThreeDPreview)
 
-                    Text("3D")
-                        .font(.system(size: 16, weight: .regular))
-                        .foregroundStyle(.white)
-                }
+            // Light burst that bridges the two scenes and hides the cut.
+            Config.Flash.color
+                .ignoresSafeArea()
+                .opacity(flashOpacity)
+                .allowsHitTesting(false)
+
+            if !showThreeDPreview {
+                previewButton
+                    .transition(.opacity)
             }
-            .buttonStyle(.plain)
-            .padding(.trailing, 42)
-            .padding(.bottom, 38)
-            .accessibilityLabel("Open 3D preview")
 
             if showThreeDPreview {
-                previewOverlay
+                closeButton
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                    .transition(.opacity)
             }
         }
         .preferredColorScheme(.dark)
     }
 
-    private var previewOverlay: some View {
-        ZStack {
-            Color.black.opacity(0.88)
-                .ignoresSafeArea()
-                .onTapGesture { showThreeDPreview = false }
+    // 0 at rest, peaks mid-transition, back to 0 — a tent driven by warpProgress.
+    private var flashOpacity: Double {
+        let p = max(0, min(1, Double(warpProgress)))
+        return sin(p * .pi) * Config.Flash.peak
+    }
 
-            VStack(spacing: 18) {
-                HStack(spacing: 18) {
-                    ForEach(Array(selectedSeatIDs.prefix(2)), id: \.self) { _ in
-                        MovieHeroSeat(config: config)
-                    }
-                }
-                .frame(height: 120)
-
-                Button("Done") {
-                    showThreeDPreview = false
-                }
-                .font(.system(size: 15, weight: .medium))
+    private var seatMap: some View {
+        VStack(spacing: 0) {
+            Text("Book your ticket")
+                .font(.system(size: Config.Title.fontSize, weight: .regular))
                 .foregroundStyle(.white)
-                .padding(.vertical, 10)
-                .padding(.horizontal, 28)
-                .background(Color.white.opacity(0.14), in: Capsule())
-                .buttonStyle(.plain)
+                .padding(.top, Config.Title.topPadding)
+                .padding(.bottom, Config.Title.bottomPadding)
+
+            SeatMapView(selectedSeatIDs: $selectedSeatIDs, config: config)
+
+            Spacer(minLength: 0)
+        }
+        .ignoresSafeArea(edges: .horizontal)
+    }
+
+    private var previewButton: some View {
+        Button(action: openPreview) {
+            ZStack {
+                Circle()
+                    .fill(config.previewButtonFillColor)
+                    .frame(width: Config.OpenButton.diameter, height: Config.OpenButton.diameter)
+
+                Text("3D")
+                    .font(.system(size: Config.OpenButton.fontSize, weight: .regular))
+                    .foregroundStyle(.white)
             }
         }
-        .transition(.opacity)
+        .buttonStyle(.plain)
+        .padding(.trailing, Config.OpenButton.trailing)
+        .padding(.bottom, Config.OpenButton.bottom)
+        .accessibilityLabel("Open 3D preview")
     }
-}
 
-private struct MovieHeroSeat: View {
-    let config: MovieConfig
+    private var closeButton: some View {
+        Button(action: closePreview) {
+            Image(systemName: "xmark")
+                .font(.system(size: Config.CloseButton.iconSize, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: Config.CloseButton.diameter, height: Config.CloseButton.diameter)
+                .background(.black.opacity(Config.CloseButton.backgroundOpacity), in: Circle())
+        }
+        .buttonStyle(.plain)
+        .padding(.top, Config.CloseButton.top)
+        .padding(.trailing, Config.CloseButton.trailing)
+        .accessibilityLabel("Close theatre view")
+    }
 
-    var body: some View {
-        RoundedRectangle(cornerRadius: 8, style: .continuous)
-            .fill(config.selectedSeatFillColor)
-            .frame(width: 72, height: 92)
-            .overlay(alignment: .top) {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .stroke(.white.opacity(0.35), lineWidth: 1)
-            }
-            .shadow(color: config.selectedSeatFillColor.opacity(0.55), radius: 28)
+    private func openPreview() {
+        // Panorama snaps in behind; the seat map is sucked into the screen while a light burst masks the hand-off.
+        withAnimation(.easeOut(duration: Config.Timing.revealIn)) {
+            showThreeDPreview = true
+        }
+        withAnimation(.easeIn(duration: Config.Timing.warpIn)) {
+            warpProgress = 1
+        }
+    }
+
+    private func closePreview() {
+        withAnimation(.easeOut(duration: Config.Timing.warpOut)) {
+            warpProgress = 0
+        }
+        withAnimation(.easeInOut(duration: Config.Timing.revealOut).delay(Config.Timing.revealOutDelay)) {
+            showThreeDPreview = false
+        }
     }
 }
 
