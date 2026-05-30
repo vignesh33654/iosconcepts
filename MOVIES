@@ -1,0 +1,279 @@
+//
+//  MOVIES
+//  wallet
+//
+//  Created by vignesh on 26/05/26.
+//
+
+# Movie Concept — Build Spec
+
+A new SwiftUI concept for this repo. Follow the existing `AGENTS.md` conventions
+(concept folders, styling in component files, no over-engineering, short inline
+comments only on tweakable values).
+
+## Goal
+
+One screen: a full-screen 360° panorama of a movie theater. Tap a seat button to
+jump to that seat's viewpoint (the panorama image swaps). A "Book" button shows a
+confirmation overlay. That's the whole concept.
+
+Touch-drag to look around first. Gyroscope is a later add, not v1.
+
+## Folder structure to create
+
+```text
+wallet/wallet/Movie/
+  Assets/                 3 panorama imagesets: pano_entrance, pano_front, pano_back
+  Components/
+    PanoramaView.swift    SceneKit sphere + panorama texture (the only hard part)
+  Models/
+    Viewpoint.swift       image name + stats per seat
+  Pages/
+    MovieMainPage.swift   the full screen: panorama + seat buttons + book overlay
+```
+
+No Config or Helpers folders for v1 — keep it minimal. Inline any constants where
+they're tweaked.
+
+## Assets
+
+Three equirectangular (2:1) panorama PNGs go into `Movie/Assets` as imagesets named:
+- `pano_entrance` — standing at the back / aisle
+- `pano_front` — front-center seat (screen looms large)
+- `pano_back` — back-corner seat (screen small, angled)
+
+(I'll drag the PNGs into the asset catalog myself in Xcode.)
+
+## App start
+
+To show this concept first, set the entry view in
+`wallet/wallet/iosconceptsApp.swift`:
+
+```swift
+WindowGroup {
+    MovieMainPage()
+}
+```
+
+## Build order
+
+1. `PanoramaView` — SceneKit sphere, inward normals, panorama texture, touch-drag
+   look-around. Get one image rendering and draggable. This is the only risky piece.
+2. `Viewpoint` model + the three viewpoints.
+3. `MovieMainPage` — show the panorama, two/three seat buttons that swap the image,
+   a stats strip, and a Book button that toggles a confirmation overlay.
+4. Polish later: gyroscope (CMMotionManager), cross-fade on swap, haptics.
+
+---
+
+## Starter code
+
+### Models/Viewpoint.swift
+
+```swift
+import Foundation
+
+struct Viewpoint: Identifiable {
+    let id: String
+    let label: String        // button text
+    let imageName: String    // asset catalog name
+    let distance: String     // stat: distance to screen
+    let angle: String        // stat: offset angle
+    let fov: String          // stat: how much of view the screen fills
+}
+
+extension Viewpoint {
+    static let all: [Viewpoint] = [
+        Viewpoint(id: "entrance", label: "Entrance",
+                  imageName: "pano_entrance",
+                  distance: "—", angle: "—", fov: "—"),
+        Viewpoint(id: "front", label: "Front center",
+                  imageName: "pano_front",
+                  distance: "6m", angle: "0°", fov: "78%"),
+        Viewpoint(id: "back", label: "Back corner",
+                  imageName: "pano_back",
+                  distance: "28m", angle: "24°", fov: "26%")
+    ]
+}
+```
+
+### Components/PanoramaView.swift
+
+```swift
+import SwiftUI
+import SceneKit
+
+// 360 panorama renderer: a sphere with the image mapped to its INSIDE,
+// camera at the center. Touch-drag to look around (allowsCameraControl).
+struct PanoramaView: UIViewRepresentable {
+    var imageName: String
+
+    func makeUIView(context: Context) -> SCNView {
+        let view = SCNView()
+        view.scene = makeScene(imageName: imageName)
+        view.allowsCameraControl = true          // drag to look around
+        view.backgroundColor = .black
+        view.isUserInteractionEnabled = true
+        // tweak: limits the zoom-out so users can't break the sphere illusion
+        view.defaultCameraController.maximumVerticalAngle = 80
+        view.defaultCameraController.minimumVerticalAngle = -80
+        return view
+    }
+
+    func updateUIView(_ view: SCNView, context: Context) {
+        // swap the texture when the selected seat changes
+        view.scene = makeScene(imageName: imageName)
+    }
+
+    private func makeScene(imageName: String) -> SCNScene {
+        let scene = SCNScene()
+
+        let sphere = SCNSphere(radius: 10)
+        sphere.segmentCount = 96                  // tweak: higher = smoother sphere
+        let mat = SCNMaterial()
+        mat.diffuse.contents = UIImage(named: imageName)
+        mat.isDoubleSided = true
+        mat.cullMode = .front                     // render the INSIDE of the sphere
+        sphere.firstMaterial = mat
+
+        let node = SCNNode(geometry: sphere)
+        // flip horizontally so the panorama isn't mirrored
+        node.scale = SCNVector3(1, 1, -1)
+        scene.rootNode.addChildNode(node)
+
+        let cameraNode = SCNNode()
+        cameraNode.camera = SCNCamera()
+        cameraNode.position = SCNVector3(0, 0, 0) // camera sits at sphere center
+        cameraNode.camera?.fieldOfView = 75       // tweak: starting zoom
+        scene.rootNode.addChildNode(cameraNode)
+
+        return scene
+    }
+}
+```
+
+### Pages/MovieMainPage.swift
+
+```swift
+import SwiftUI
+
+struct MovieMainPage: View {
+    @State private var selected: Viewpoint = Viewpoint.all[0]
+    @State private var showBooking = false
+
+    var body: some View {
+        ZStack {
+            PanoramaView(imageName: selected.imageName)
+                .ignoresSafeArea()
+
+            VStack {
+                // top stats strip (hidden at the entrance, where stats are "—")
+                if selected.id != "entrance" {
+                    statsStrip
+                        .padding(.top, 8)
+                }
+                Spacer()
+                seatButtons
+                bookButton
+                    .padding(.bottom, 24)
+            }
+            .padding(.horizontal, 16)
+
+            if showBooking {
+                bookingOverlay
+            }
+        }
+        .preferredColorScheme(.dark)
+    }
+
+    private var statsStrip: some View {
+        HStack(spacing: 20) {
+            stat(selected.distance, "distance")
+            stat(selected.angle, "offset")
+            stat(selected.fov, "screen")
+        }
+        .padding(.vertical, 8).padding(.horizontal, 16)
+        .background(.ultraThinMaterial, in: Capsule())
+    }
+
+    private func stat(_ value: String, _ label: String) -> some View {
+        VStack(spacing: 1) {
+            Text(value).font(.system(size: 15, weight: .semibold))
+            Text(label).font(.system(size: 9)).foregroundStyle(.secondary)
+                .textCase(.uppercase)
+        }
+    }
+
+    private var seatButtons: some View {
+        HStack(spacing: 10) {
+            ForEach(Viewpoint.all) { vp in
+                Button {
+                    withAnimation(.easeInOut(duration: 0.3)) { selected = vp }
+                } label: {
+                    Text(vp.label)
+                        .font(.system(size: 13, weight: .medium))
+                        .padding(.vertical, 10).padding(.horizontal, 14)
+                        .frame(maxWidth: .infinity)
+                        .background(selected.id == vp.id ? Color.orange : Color.white.opacity(0.12),
+                                    in: RoundedRectangle(cornerRadius: 12))
+                        .foregroundStyle(selected.id == vp.id ? .black : .white)
+                }
+            }
+        }
+        .padding(.bottom, 12)
+    }
+
+    private var bookButton: some View {
+        Button {
+            showBooking = true
+        } label: {
+            Text(selected.id == "entrance" ? "Pick a seat to book" : "Book \(selected.label)")
+                .font(.system(size: 15, weight: .semibold))
+                .frame(maxWidth: .infinity).padding(.vertical, 14)
+                .background(Color.blue, in: RoundedRectangle(cornerRadius: 14))
+                .foregroundStyle(.white)
+        }
+        .disabled(selected.id == "entrance")
+        .opacity(selected.id == "entrance" ? 0.5 : 1)
+    }
+
+    private var bookingOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.6).ignoresSafeArea()
+                .onTapGesture { showBooking = false }
+            VStack(spacing: 14) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 44)).foregroundStyle(.green)
+                Text("Seat booked").font(.system(size: 20, weight: .semibold))
+                Text("\(selected.label) · \(selected.distance) from screen")
+                    .font(.system(size: 14)).foregroundStyle(.secondary)
+                Button("Done") { showBooking = false }
+                    .font(.system(size: 15, weight: .medium))
+                    .padding(.vertical, 10).padding(.horizontal, 28)
+                    .background(Color.white.opacity(0.15), in: Capsule())
+            }
+            .padding(28)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
+            .padding(40)
+        }
+    }
+}
+
+#Preview {
+    MovieMainPage()
+}
+```
+
+---
+
+## Notes
+
+- The `cullMode = .front` + `scale.z = -1` combo is what makes the image wrap on the
+  INSIDE of the sphere and read the right way round. If the panorama looks mirrored,
+  flip the sign of `node.scale.x` instead.
+- `allowsCameraControl = true` gives drag-to-look for free. Gyroscope (later) replaces
+  it with a `CMMotionManager` feeding `cameraNode.orientation`.
+- All three panoramas must be the same theater from different spots, or the seat-swap
+  illusion breaks.
+- Keep styling inside the component/page files per `AGENTS.md`. Don't add Config or
+  Helpers until something actually needs them.
