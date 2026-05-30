@@ -119,7 +119,7 @@ struct MovieHomeStyle {
         }
 
         enum Theatre {
-            static let button: CGFloat = 48
+            static let button: CGFloat = 32
             static let radius: CGFloat = 12
         }
     }

@@ -20,7 +20,7 @@ private enum SelectedSeat3DConfig {
         static let fadeIn: TimeInterval = 0.08
         static let startSize: Float = 0.42
         static let endSize: Float = Model.scale
-        static let popSize: Float = 1.12
+        static let popSize: Float = 1.2
         static let spin: CGFloat = -400
         static let spinTime: TimeInterval = 0.4
         static let settleTime: TimeInterval = 0.16
