@@ -7,7 +7,7 @@ struct ScreenArc: Shape {
         let end = CGPoint(x: rect.maxX, y: rect.minY)
         let control = CGPoint(
             x: rect.midX,
-            y: rect.maxY + rect.height * MovieHomeStyle.Layout.screenArcControlDepth
+            y: rect.maxY + rect.height * MovieHomeStyle.Layout.Screen.curve
         )
 
         path.move(to: start)

@@ -25,28 +25,28 @@ struct MovieHomePage: View {
 
             VStack(spacing: 0) {
                 header
-                    .padding(.top, Style.Layout.headerTop)
+                    .padding(.top, Style.Layout.Page.headerTop)
 
                 showtimeSelector
-                    .padding(.top, Style.Layout.showtimeTop)
+                    .padding(.top, Style.Layout.Page.timesTop)
 
                 seatGrid
-                    .padding(.top, Style.Layout.seatGridTop)
+                    .padding(.top, Style.Layout.Page.seatsTop)
 
                 Spacer(minLength: 0)
 
                 screenIndicator
-                    .padding(.bottom, Style.Layout.screenBottom)
+                    .padding(.bottom, Style.Layout.Page.screenBottom)
 
                 legendBar
-                    .padding(.bottom, Style.Layout.legendBottom)
+                    .padding(.bottom, Style.Layout.Page.legendBottom)
             }
         }
         .preferredColorScheme(.dark)
     }
 
     private var header: some View {
-        HStack(spacing: Style.Layout.headerGap) {
+        HStack(spacing: Style.Layout.Header.gap) {
             Button {
                 // Back action — wire to parent navigation.
             } label: {
@@ -55,7 +55,7 @@ struct MovieHomePage: View {
                     .resizable()
                     .scaledToFit()
                     .foregroundStyle(.white)
-                    .frame(width: Style.Layout.backButtonSize, height: Style.Layout.backButtonSize)
+                    .frame(width: Style.Layout.Header.backButton, height: Style.Layout.Header.backButton)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Back")
@@ -63,10 +63,10 @@ struct MovieHomePage: View {
             movieAssetImage(Style.Asset.poster)
                 .resizable()
                 .scaledToFill()
-                .frame(width: Style.Layout.posterSize, height: Style.Layout.posterSize)
-                .clipShape(RoundedRectangle(cornerRadius: Style.Layout.posterCornerRadius, style: .continuous))
+                .frame(width: Style.Layout.Header.poster, height: Style.Layout.Header.poster)
+                .clipShape(RoundedRectangle(cornerRadius: Style.Layout.Header.posterRadius, style: .continuous))
 
-            VStack(alignment: .leading, spacing: Style.Layout.titleSubtitleGap) {
+            VStack(alignment: .leading, spacing: Style.Layout.Header.titleGap) {
                 Text("Interstellar")
                     .font(.geist(Style.Typography.title, weight: .medium))
                     .foregroundStyle(.white)
@@ -76,17 +76,17 @@ struct MovieHomePage: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.horizontal, Style.Layout.horizontalPadding)
+        .padding(.horizontal, Style.Layout.Page.padding)
     }
 
     private var showtimeSelector: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Style.Layout.showtimeSpacing) {
+            HStack(spacing: Style.Layout.Time.gap) {
                 ForEach(showtimes) { showtime in
                     showtimeCard(showtime)
                 }
             }
-            .padding(.horizontal, Style.Layout.horizontalPadding)
+            .padding(.horizontal, Style.Layout.Page.padding)
         }
         .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
     }
@@ -97,7 +97,7 @@ struct MovieHomePage: View {
         return Button {
             selectedShowtime = showtime.id
         } label: {
-            VStack(spacing: Style.Layout.showtimeTextGap) {
+            VStack(spacing: Style.Layout.Time.textGap) {
                 Text(showtime.time)
                     .font(.geist(Style.Typography.showtime))
                     .foregroundStyle(.white)
@@ -105,7 +105,7 @@ struct MovieHomePage: View {
                     .font(.geist(Style.Typography.showtimeScreen))
                     .foregroundStyle(Style.Palette.textSecondary)
             }
-            .frame(width: Style.Layout.showtimeWidth, height: Style.Layout.showtimeHeight)
+            .frame(width: Style.Layout.Time.width, height: Style.Layout.Time.height)
             .background(showtimeBackground)
             .overlay(showtimeBorder(isSelected: isSelected))
         }
@@ -120,19 +120,19 @@ struct MovieHomePage: View {
             startPoint: .top,
             endPoint: .bottom
         )
-        .clipShape(RoundedRectangle(cornerRadius: Style.Layout.showtimeCornerRadius, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: Style.Layout.Time.radius, style: .continuous))
     }
 
     private func showtimeBorder(isSelected: Bool) -> some View {
-        RoundedRectangle(cornerRadius: Style.Layout.showtimeCornerRadius, style: .continuous)
+        RoundedRectangle(cornerRadius: Style.Layout.Time.radius, style: .continuous)
             .strokeBorder(
                 isSelected ? Style.Palette.accent : Style.Palette.cardBorder,
-                lineWidth: isSelected ? Style.Layout.selectedShowtimeBorder : Style.Layout.showtimeBorder
+                lineWidth: isSelected ? Style.Layout.Time.selectedBorder : Style.Layout.Time.border
             )
     }
 
     private var seatGrid: some View {
-        HStack(alignment: .top, spacing: Style.Layout.rowLabelGap) {
+        HStack(alignment: .top, spacing: Style.Layout.Seat.rowGap) {
             rowLabelColumn
             seatColumn
         }
@@ -144,20 +144,20 @@ struct MovieHomePage: View {
                 rowLabel(row)
             }
 
-            Color.clear.frame(height: Style.Layout.sectionGap)
+            Color.clear.frame(height: Style.Layout.Seat.aisleGap)
 
             ForEach(Self.lowerRows, id: \.self) { row in
                 rowLabel(row)
             }
         }
-        .frame(width: Style.Layout.rowLabelWidth)
+        .frame(width: Style.Layout.Seat.rowWidth)
     }
 
     private func rowLabel(_ row: String) -> some View {
         Text(row)
             .font(.geist(Style.Typography.rowLabel))
             .foregroundStyle(.white)
-            .frame(width: Style.Layout.rowLabelWidth, height: Style.Layout.seatHeight, alignment: .center)
+            .frame(width: Style.Layout.Seat.rowWidth, height: Style.Layout.Seat.slotHeight, alignment: .center)
     }
 
     private var seatColumn: some View {
@@ -166,7 +166,7 @@ struct MovieHomePage: View {
                 seatRow(for: row)
             }
 
-            Color.clear.frame(height: Style.Layout.sectionGap)
+            Color.clear.frame(height: Style.Layout.Seat.aisleGap)
 
             ForEach(Self.lowerRows, id: \.self) { row in
                 seatRow(for: row)
@@ -175,12 +175,12 @@ struct MovieHomePage: View {
     }
 
     private func seatRow(for row: String) -> some View {
-        HStack(spacing: Style.Layout.seatStride - Style.Layout.seatBox) {
+        HStack(spacing: Style.Layout.Seat.step - Style.Layout.Seat.box) {
             ForEach(Self.seatNumbers, id: \.self) { number in
                 seatCell(row: row, number: number)
             }
         }
-        .frame(height: Style.Layout.seatHeight)
+        .frame(height: Style.Layout.Seat.slotHeight)
     }
 
     private func seatCell(row: String, number: Int) -> some View {
@@ -217,16 +217,16 @@ struct MovieHomePage: View {
     }
 
     private var screenIndicator: some View {
-        VStack(spacing: Style.Layout.screenTextGap) {
+        VStack(spacing: Style.Layout.Screen.gap) {
             Text("SCREEN THIS WAY")
                 .font(.geist(Style.Typography.screenLabel))
-                .tracking(Style.Layout.screenTextTracking)
+                .tracking(Style.Layout.Screen.tracking)
                 .foregroundStyle(.white.opacity(0.78))
 
             ScreenArc()
-                .stroke(screenArcGradient, style: StrokeStyle(lineWidth: Style.Layout.screenArcLineWidth, lineCap: .round))
-                .frame(height: Style.Layout.screenArcHeight)
-                .padding(.horizontal, Style.Layout.screenArcHorizontalPadding)
+                .stroke(screenArcGradient, style: StrokeStyle(lineWidth: Style.Layout.Screen.lineWidth, lineCap: .round))
+                .frame(height: Style.Layout.Screen.arcHeight)
+                .padding(.horizontal, Style.Layout.Screen.arcPadding)
         }
     }
 
@@ -244,7 +244,7 @@ struct MovieHomePage: View {
 
     private var legendBar: some View {
         HStack(alignment: .center, spacing: 0) {
-            HStack(spacing: Style.Layout.legendSpacing) {
+            HStack(spacing: Style.Layout.Legend.gap) {
                 legendItem(label: "Available", swatch: .availableSwatch)
                 legendItem(label: "Selected", swatch: .selectedSwatch)
                 legendItem(label: "Sold", swatch: .soldSwatch)
@@ -253,14 +253,14 @@ struct MovieHomePage: View {
             Spacer(minLength: 0)
             theatreViewButton
         }
-        .padding(.horizontal, Style.Layout.horizontalPadding)
-        .frame(height: Style.Layout.legendHeight)
+        .padding(.horizontal, Style.Layout.Page.padding)
+        .frame(height: Style.Layout.Legend.height)
     }
 
     private func legendItem(label: String, swatch: LegendSwatch) -> some View {
-        HStack(spacing: Style.Layout.legendItemGap) {
+        HStack(spacing: Style.Layout.Legend.itemGap) {
             swatchView(swatch)
-                .frame(width: Style.Layout.legendSwatch, height: Style.Layout.legendSwatch)
+                .frame(width: Style.Layout.Legend.swatch, height: Style.Layout.Legend.swatch)
 
             Text(label)
                 .font(.geist(Style.Typography.legend))
@@ -272,13 +272,13 @@ struct MovieHomePage: View {
     private func swatchView(_ swatch: LegendSwatch) -> some View {
         switch swatch {
         case .availableSwatch:
-            RoundedRectangle(cornerRadius: Style.Layout.legendCornerRadius, style: .continuous)
-                .strokeBorder(.white.opacity(0.75), lineWidth: Style.Layout.legendStrokeWidth)
+            RoundedRectangle(cornerRadius: Style.Layout.Legend.radius, style: .continuous)
+                .strokeBorder(.white.opacity(0.75), lineWidth: Style.Layout.Legend.lineWidth)
         case .selectedSwatch:
-            RoundedRectangle(cornerRadius: Style.Layout.legendCornerRadius, style: .continuous)
+            RoundedRectangle(cornerRadius: Style.Layout.Legend.radius, style: .continuous)
                 .fill(Style.Palette.accent)
         case .soldSwatch:
-            RoundedRectangle(cornerRadius: Style.Layout.legendCornerRadius, style: .continuous)
+            RoundedRectangle(cornerRadius: Style.Layout.Legend.radius, style: .continuous)
                 .fill(Style.Palette.soldSeat)
         }
     }
@@ -290,8 +290,8 @@ struct MovieHomePage: View {
             movieAssetImage(Style.Asset.theatre)
                 .resizable()
                 .scaledToFill()
-                .frame(width: Style.Layout.theatreButton, height: Style.Layout.theatreButton)
-                .clipShape(RoundedRectangle(cornerRadius: Style.Layout.theatreButtonCornerRadius, style: .continuous))
+                .frame(width: Style.Layout.Theatre.button, height: Style.Layout.Theatre.button)
+                .clipShape(RoundedRectangle(cornerRadius: Style.Layout.Theatre.radius, style: .continuous))
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Open theatre view")
