@@ -39,6 +39,7 @@ struct Chair: View {
             Text("\(number)")
                 .font(.geist(Style.Typography.seatNumber, weight: .light))
                 .foregroundStyle(Style.Palette.seatNumber)
+                .offset(y: Style.Layout.Seat.numberOffsetY)
                 .opacity(showsSeatNumber && showsNumber ? 1 : 0)
         }
         .frame(width: Style.Layout.Seat.box, height: Style.Layout.Seat.slotHeight, alignment: .center)

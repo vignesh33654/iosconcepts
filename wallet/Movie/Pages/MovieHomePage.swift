@@ -229,6 +229,10 @@ struct MovieHomePage: View {
                 .scaledToFill()
                 .frame(width: Style.Layout.Theatre.button, height: Style.Layout.Theatre.button)
                 .clipShape(RoundedRectangle(cornerRadius: Style.Layout.Theatre.radius, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: Style.Layout.Theatre.radius, style: .continuous)
+                        .strokeBorder(.white.opacity(0.3), lineWidth: Style.Layout.Theatre.border)
+                }
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Open theatre view")

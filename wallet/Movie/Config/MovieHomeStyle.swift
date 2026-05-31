@@ -73,7 +73,7 @@ struct MovieHomeStyle {
         enum Header {
             static let poster: CGFloat = 36
             static let posterRadius: CGFloat = 7
-            static let backButton: CGFloat = 40
+            static let backButton: CGFloat = 24
             static let gap: CGFloat = 12
             static let titleGap: CGFloat = 6
         }
@@ -98,6 +98,7 @@ struct MovieHomeStyle {
             static let rowGap: CGFloat = 0
             static let aisleGap: CGFloat = 32
             static let numberTop: CGFloat = 10
+            static let numberOffsetY: CGFloat = -1
         }
 
         enum Screen {
@@ -119,8 +120,9 @@ struct MovieHomeStyle {
         }
 
         enum Theatre {
-            static let button: CGFloat = 32
+            static let button: CGFloat = 48
             static let radius: CGFloat = 12
+            static let border: CGFloat = 1
             static let closeButton: CGFloat = 38
             static let closeIcon: CGFloat = 13
             static let closeTop: CGFloat = 42
