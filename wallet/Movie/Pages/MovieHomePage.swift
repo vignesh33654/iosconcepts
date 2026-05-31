@@ -3,9 +3,7 @@ import SwiftUI
 struct MovieHomePage: View {
     private typealias Style = MovieHomeStyle
 
-    private static let upperRows = ["A", "B", "C", "D", "E"]
-    private static let lowerRows = ["F", "G", "H", "I"]
-    private static let seatNumbers = Array(1...9)
+    private static let rows = MovieSeatPlan.rows
     private static let initialSold: Set<String> = []
 
     private let showtimes: [Showtime] = [
@@ -132,52 +130,28 @@ struct MovieHomePage: View {
     }
 
     private var seatGrid: some View {
-        HStack(alignment: .top, spacing: Style.Layout.Seat.rowGap) {
-            rowLabelColumn
-            seatColumn
-        }
-    }
-
-    private var rowLabelColumn: some View {
         VStack(spacing: 0) {
-            ForEach(Self.upperRows, id: \.self) { row in
-                rowLabel(row)
-            }
+            ForEach(Self.rows) { row in
+                seatRow(row)
 
-            Color.clear.frame(height: Style.Layout.Seat.aisleGap)
-
-            ForEach(Self.lowerRows, id: \.self) { row in
-                rowLabel(row)
-            }
-        }
-        .frame(width: Style.Layout.Seat.rowWidth)
-    }
-
-    private func rowLabel(_ row: String) -> some View {
-        Text(row)
-            .font(.geist(Style.Typography.rowLabel))
-            .foregroundStyle(.white)
-            .frame(width: Style.Layout.Seat.rowWidth, height: Style.Layout.Seat.slotHeight, alignment: .center)
-    }
-
-    private var seatColumn: some View {
-        VStack(spacing: 0) {
-            ForEach(Self.upperRows, id: \.self) { row in
-                seatRow(for: row)
-            }
-
-            Color.clear.frame(height: Style.Layout.Seat.aisleGap)
-
-            ForEach(Self.lowerRows, id: \.self) { row in
-                seatRow(for: row)
+                if row.aisleAfter {
+                    Color.clear.frame(height: Style.Layout.Seat.aisleGap)
+                }
             }
         }
     }
 
-    private func seatRow(for row: String) -> some View {
-        HStack(spacing: Style.Layout.Seat.step - Style.Layout.Seat.box) {
-            ForEach(Self.seatNumbers, id: \.self) { number in
-                seatCell(row: row, number: number)
+    private func seatRow(_ row: MovieSeatRow) -> some View {
+        HStack(alignment: .center, spacing: Style.Layout.Seat.rowGap) {
+            Text(row.name)
+                .font(.geist(Style.Typography.rowLabel))
+                .foregroundStyle(.white)
+                .frame(width: Style.Layout.Seat.rowWidth, height: Style.Layout.Seat.slotHeight, alignment: .center)
+
+            HStack(spacing: Style.Layout.Seat.step - Style.Layout.Seat.box) {
+                ForEach(row.numbers, id: \.self) { number in
+                    seatCell(row: row.name, number: number)
+                }
             }
         }
         .frame(height: Style.Layout.Seat.slotHeight)
@@ -187,13 +161,18 @@ struct MovieHomePage: View {
         let id = "\(row)-\(number)"
         let state = seatState(for: id)
 
+        let showsSeat = MovieSeatPlan.showsSeat(row: row, number: number)
+
         return Button {
             toggle(id, state: state)
         } label: {
             SeatChair(number: number, state: state)
+                .opacity(showsSeat ? 1 : 0)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .disabled(!showsSeat)
+        .accessibilityHidden(!showsSeat)
         .accessibilityLabel("Seat \(row)\(number)")
         .accessibilityValue(state.accessibilityValue)
         .accessibilityAddTraits(state == .sold ? .isStaticText : [])

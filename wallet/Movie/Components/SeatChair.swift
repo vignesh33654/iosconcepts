@@ -3,6 +3,13 @@ import SwiftUI
 struct SeatChair: View {
     let number: Int
     let state: SeatState
+    let showsSeatNumber: Bool
+
+    init(number: Int, state: SeatState, showsSeatNumber: Bool = true) {
+        self.number = number
+        self.state = state
+        self.showsSeatNumber = showsSeatNumber
+    }
 
     @State private var showsNumber = true
     @State private var numberRevealTask: Task<Void, Never>?
@@ -10,17 +17,16 @@ struct SeatChair: View {
     private typealias Style = MovieHomeStyle
 
     var body: some View {
-        ZStack(alignment: .top) {
+        ZStack {
             chairVisual
                 .frame(width: Style.Layout.Seat.width, height: Style.Layout.Seat.height)
 
             Text("\(number)")
                 .font(.geist(Style.Typography.seatNumber, weight: .light))
                 .foregroundStyle(Style.Palette.seatNumber)
-                .padding(.top, Style.Layout.Seat.numberTop)
-                .opacity(showsNumber ? 1 : 0)
+                .opacity(showsSeatNumber && showsNumber ? 1 : 0)
         }
-        .frame(width: Style.Layout.Seat.box, height: Style.Layout.Seat.slotHeight, alignment: .top)
+        .frame(width: Style.Layout.Seat.box, height: Style.Layout.Seat.slotHeight, alignment: .center)
         .onAppear {
             updateNumberVisibility(for: state)
         }

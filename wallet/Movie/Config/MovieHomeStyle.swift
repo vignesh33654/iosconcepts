@@ -89,14 +89,14 @@ struct MovieHomeStyle {
         }
 
         enum Seat {
-            static let box: CGFloat = 33
-            static let width: CGFloat = 32
-            static let height: CGFloat = 40
-            static let slotHeight: CGFloat = 46
-            static let step: CGFloat = 37
+            static let box: CGFloat = 38
+            static let width: CGFloat = 38
+            static let height: CGFloat = 48
+            static let slotHeight: CGFloat = 52
+            static let step: CGFloat = 38
             static let rowWidth: CGFloat = 30
-            static let rowGap: CGFloat = 9
-            static let aisleGap: CGFloat = 38
+            static let rowGap: CGFloat = 0
+            static let aisleGap: CGFloat = 32
             static let numberTop: CGFloat = 10
         }
 

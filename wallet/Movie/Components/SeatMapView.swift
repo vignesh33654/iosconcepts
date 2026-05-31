@@ -5,22 +5,21 @@ struct SeatMapView: View {
     @Binding var selectedSeatIDs: Set<Seat.ID>
     let config: MovieConfig
 
-    private let rows = Array("ABCDEFGHI").map(String.init)
-    private let seatNumbers = Array(1...9)
+    private let rows = MovieSeatPlan.rows
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                ForEach(rows, id: \.self) { row in
+                ForEach(rows) { row in
                     HStack(alignment: .center, spacing: 10) {
-                        Text(row)
+                        Text(row.name)
                             .font(.system(size: 15, weight: .regular))
                             .foregroundStyle(.white)
                             .frame(width: 22, alignment: .leading)
 
-                        seatRow(for: row)
+                        seatRow(row)
                     }
-                    .padding(.bottom, row == "G" ? config.sectionGap : config.rowGap)
+                    .padding(.bottom, row.aisleAfter ? config.sectionGap : config.rowGap)
                 }
             }
             .padding(.leading, 20)
@@ -29,9 +28,12 @@ struct SeatMapView: View {
         .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
     }
 
-    private func seatRow(for row: String) -> some View {
+    private func seatRow(_ row: MovieSeatRow) -> some View {
         HStack(spacing: config.seatGap) {
-            ForEach(seats(for: row)) { seat in
+            ForEach(row.numbers, id: \.self) { number in
+                let seat = Seat(row: row.name, number: number)
+                let showsSeat = MovieSeatPlan.showsSeat(row: seat.row, number: seat.number)
+
                 Button {
                     toggle(seat)
                 } label: {
@@ -40,16 +42,13 @@ struct SeatMapView: View {
                         isSelected: selectedSeatIDs.contains(seat.id),
                         config: config
                     )
+                    .opacity(showsSeat ? 1 : 0)
                 }
                 .buttonStyle(.plain)
+                .disabled(!showsSeat)
+                .accessibilityHidden(!showsSeat)
                 .accessibilityLabel("Seat \(seat.row)\(seat.number)")
             }
-        }
-    }
-
-    private func seats(for row: String) -> [Seat] {
-        seatNumbers.map { number in
-            Seat(row: row, number: number)
         }
     }
 
@@ -73,7 +72,7 @@ private struct MovieSeatIcon: View {
     let config: MovieConfig
 
     var body: some View {
-        ZStack(alignment: .top) {
+        ZStack {
             Image(uiImage: chairImage)
                 .renderingMode(isSelected ? .original : .template)
                 .resizable()
@@ -83,7 +82,6 @@ private struct MovieSeatIcon: View {
             Text("\(number)")
                 .font(.system(size: 9, weight: .regular))
                 .foregroundStyle(.white.opacity(0.9))
-                .padding(.top, 12)
         }
         .frame(width: config.seatIconWidth, height: config.seatIconHeight)
         .contentShape(Rectangle())
