@@ -28,11 +28,27 @@ struct Chair: View {
 
     @State private var showsNumber = true
     @State private var numberRevealTask: Task<Void, Never>?
+    @State private var rippleScale: CGFloat = 0.6
+    @State private var rippleOpacity: Double = 0
 
     private typealias Style = MovieHomeStyle
 
+    private enum Ripple {
+        static let endScale: CGFloat = 2.6
+        static let startOpacity: Double = 0.65
+        static let duration: Double = 0.42
+        static let strokeWidth: CGFloat = 1.5
+    }
+
     var body: some View {
         ZStack {
+            // ripple ring — renders outside the seat bounds without clipping
+            Circle()
+                .strokeBorder(Style.Palette.accent.opacity(rippleOpacity), lineWidth: Ripple.strokeWidth)
+                .frame(width: Style.Layout.Seat.box, height: Style.Layout.Seat.box)
+                .scaleEffect(rippleScale)
+                .allowsHitTesting(false)
+
             chairVisual
                 .frame(width: Style.Layout.Seat.width, height: Style.Layout.Seat.height)
 
@@ -46,10 +62,20 @@ struct Chair: View {
             updateNumberVisibility(for: state)
         }
         .onChange(of: state) { _, newState in
+            if newState == .selected { triggerRipple() }
             updateNumberVisibility(for: newState)
         }
         .onDisappear {
             numberRevealTask?.cancel()
+        }
+    }
+
+    private func triggerRipple() {
+        rippleScale = 0.6
+        rippleOpacity = Ripple.startOpacity
+        withAnimation(.easeOut(duration: Ripple.duration)) {
+            rippleScale = Ripple.endScale
+            rippleOpacity = 0
         }
     }
 
