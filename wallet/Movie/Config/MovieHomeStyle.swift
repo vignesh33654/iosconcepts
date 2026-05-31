@@ -121,6 +121,11 @@ struct MovieHomeStyle {
         enum Theatre {
             static let button: CGFloat = 32
             static let radius: CGFloat = 12
+            static let closeButton: CGFloat = 38
+            static let closeIcon: CGFloat = 13
+            static let closeTop: CGFloat = 42
+            static let closeTrailing: CGFloat = 22
+            static let closeBackgroundOpacity: Double = 0.42
         }
     }
 
@@ -138,8 +143,7 @@ struct MovieHomeStyle {
     enum Asset {
         static let back = "Back"
         static let poster = "Header image"
-        static let theatre = "Theatre view"
+        static let theatre = "Movie Theatre view"
         static let availableChair = "Chair"
-        static let selectedChair = "Filled chair"
     }
 }

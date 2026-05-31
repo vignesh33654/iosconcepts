@@ -1,9 +1,20 @@
 import SwiftUI
 
+private struct Showtime: Identifiable, Equatable {
+    let id: String
+    let time: String
+    let screen: String
+}
+
+private enum LegendSwatch {
+    case availableSwatch
+    case selectedSwatch
+    case soldSwatch
+}
+
 struct MovieHomePage: View {
     private typealias Style = MovieHomeStyle
 
-    private static let rows = MovieSeatPlan.rows
     private static let initialSold: Set<String> = []
 
     private let showtimes: [Showtime] = [
@@ -15,6 +26,7 @@ struct MovieHomePage: View {
 
     @State private var selectedShowtime: Showtime.ID = "1125"
     @State private var selectedSeats: Set<String> = []
+    @State private var showsTheatreView = false
     private let soldSeats: Set<String> = MovieHomePage.initialSold
 
     var body: some View {
@@ -38,6 +50,12 @@ struct MovieHomePage: View {
 
                 legendBar
                     .padding(.bottom, Style.Layout.Page.legendBottom)
+            }
+
+            if showsTheatreView {
+                theatreOverlay
+                    .transition(.opacity)
+                    .zIndex(1)
             }
         }
         .preferredColorScheme(.dark)
@@ -130,69 +148,7 @@ struct MovieHomePage: View {
     }
 
     private var seatGrid: some View {
-        VStack(spacing: 0) {
-            ForEach(Self.rows) { row in
-                seatRow(row)
-
-                if row.aisleAfter {
-                    Color.clear.frame(height: Style.Layout.Seat.aisleGap)
-                }
-            }
-        }
-    }
-
-    private func seatRow(_ row: MovieSeatRow) -> some View {
-        HStack(alignment: .center, spacing: Style.Layout.Seat.rowGap) {
-            Text(row.name)
-                .font(.geist(Style.Typography.rowLabel))
-                .foregroundStyle(.white)
-                .frame(width: Style.Layout.Seat.rowWidth, height: Style.Layout.Seat.slotHeight, alignment: .center)
-
-            HStack(spacing: Style.Layout.Seat.step - Style.Layout.Seat.box) {
-                ForEach(row.numbers, id: \.self) { number in
-                    seatCell(row: row.name, number: number)
-                }
-            }
-        }
-        .frame(height: Style.Layout.Seat.slotHeight)
-    }
-
-    private func seatCell(row: String, number: Int) -> some View {
-        let id = "\(row)-\(number)"
-        let state = seatState(for: id)
-
-        let showsSeat = MovieSeatPlan.showsSeat(row: row, number: number)
-
-        return Button {
-            toggle(id, state: state)
-        } label: {
-            SeatChair(number: number, state: state)
-                .opacity(showsSeat ? 1 : 0)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .disabled(!showsSeat)
-        .accessibilityHidden(!showsSeat)
-        .accessibilityLabel("Seat \(row)\(number)")
-        .accessibilityValue(state.accessibilityValue)
-        .accessibilityAddTraits(state == .sold ? .isStaticText : [])
-    }
-
-    private func seatState(for id: String) -> SeatState {
-        if soldSeats.contains(id) { return .sold }
-        if selectedSeats.contains(id) { return .selected }
-        return .available
-    }
-
-    private func toggle(_ id: String, state: SeatState) {
-        switch state {
-        case .sold:
-            return
-        case .selected:
-            selectedSeats.remove(id)
-        case .available:
-            selectedSeats.insert(id)
-        }
+        ChairMapView(selectedSeats: $selectedSeats, soldSeats: soldSeats)
     }
 
     private var screenIndicator: some View {
@@ -264,7 +220,9 @@ struct MovieHomePage: View {
 
     private var theatreViewButton: some View {
         Button {
-            // Open theatre view — wire to parent navigation.
+            withAnimation(.easeOut) {
+                showsTheatreView = true
+            }
         } label: {
             movieAssetImage(Style.Asset.theatre)
                 .resizable()
@@ -274,6 +232,45 @@ struct MovieHomePage: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Open theatre view")
+    }
+
+    private var theatreOverlay: some View {
+        ZStack(alignment: .topTrailing) {
+            PanoramaView(imageName: Style.Asset.theatre)
+                .ignoresSafeArea()
+
+            Button {
+                withAnimation(.easeInOut) {
+                    showsTheatreView = false
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: Style.Layout.Theatre.closeIcon, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: Style.Layout.Theatre.closeButton, height: Style.Layout.Theatre.closeButton)
+                    .background(.black.opacity(Style.Layout.Theatre.closeBackgroundOpacity), in: Circle())
+            }
+            .buttonStyle(.plain)
+            .padding(.top, Style.Layout.Theatre.closeTop)
+            .padding(.trailing, Style.Layout.Theatre.closeTrailing)
+            .accessibilityLabel("Close theatre view")
+        }
+    }
+}
+
+private struct ScreenArc: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let start = CGPoint(x: rect.minX, y: rect.minY)
+        let end = CGPoint(x: rect.maxX, y: rect.minY)
+        let control = CGPoint(
+            x: rect.midX,
+            y: rect.maxY + rect.height * MovieHomeStyle.Layout.Screen.curve
+        )
+
+        path.move(to: start)
+        path.addQuadCurve(to: end, control: control)
+        return path
     }
 }
 

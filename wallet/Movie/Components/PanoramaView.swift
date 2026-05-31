@@ -176,6 +176,6 @@ struct PanoramaView: UIViewRepresentable {
 }
 
 #Preview {
-    PanoramaView(imageName: MovieConfig().theatreImageName)
+    PanoramaView(imageName: "Movie Theatre view")
         .ignoresSafeArea()
 }
