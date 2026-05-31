@@ -30,6 +30,7 @@ struct Chair: View {
     @State private var numberRevealTask: Task<Void, Never>?
     @State private var rippleScale: CGFloat = 0.6
     @State private var rippleOpacity: Double = 0
+    @State private var shimmerPhase: CGFloat = -1
 
     private typealias Style = MovieHomeStyle
 
@@ -38,6 +39,13 @@ struct Chair: View {
         static let startOpacity: Double = 0.65
         static let duration: Double = 0.42
         static let strokeWidth: CGFloat = 1.5
+    }
+
+    private enum Shimmer {
+        static let duration: Double = 0.55
+        static let bandWidth: CGFloat = 0.55   // width of the highlight band in gradient space
+        static let blurRadius: CGFloat = 3
+        static let opacity: Double = 0.72
     }
 
     var body: some View {
@@ -51,6 +59,8 @@ struct Chair: View {
 
             chairVisual
                 .frame(width: Style.Layout.Seat.width, height: Style.Layout.Seat.height)
+                .overlay(shimmerOverlay)
+                .clipShape(Rectangle())
 
             Text("\(number)")
                 .font(.geist(Style.Typography.seatNumber, weight: .light))
@@ -62,12 +72,34 @@ struct Chair: View {
             updateNumberVisibility(for: state)
         }
         .onChange(of: state) { _, newState in
-            if newState == .selected { triggerRipple() }
+            if newState == .selected {
+                triggerRipple()
+                triggerShimmer()
+            }
             updateNumberVisibility(for: newState)
         }
         .onDisappear {
             numberRevealTask?.cancel()
         }
+    }
+
+    // diagonal light-sweep overlay using a moving gradient
+    @ViewBuilder
+    private var shimmerOverlay: some View {
+        let lo = shimmerPhase - Shimmer.bandWidth
+        let hi = shimmerPhase + Shimmer.bandWidth
+        LinearGradient(
+            stops: [
+                .init(color: .clear,                         location: max(0, lo)),
+                .init(color: .white.opacity(Shimmer.opacity), location: shimmerPhase),
+                .init(color: .clear,                         location: min(1, hi)),
+            ],
+            startPoint: UnitPoint(x: 0, y: 0),
+            endPoint: UnitPoint(x: 1, y: 1)
+        )
+        .blur(radius: Shimmer.blurRadius)
+        .blendMode(.screen)
+        .allowsHitTesting(false)
     }
 
     private func triggerRipple() {
@@ -76,6 +108,13 @@ struct Chair: View {
         withAnimation(.easeOut(duration: Ripple.duration)) {
             rippleScale = Ripple.endScale
             rippleOpacity = 0
+        }
+    }
+
+    private func triggerShimmer() {
+        shimmerPhase = -Shimmer.bandWidth
+        withAnimation(.easeInOut(duration: Shimmer.duration)) {
+            shimmerPhase = 1 + Shimmer.bandWidth
         }
     }
 

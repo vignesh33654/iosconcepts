@@ -29,11 +29,6 @@ struct MovieHomePage: View {
     @State private var showsTheatreView = false
     private let soldSeats: Set<String> = MovieHomePage.initialSold
 
-    private var currentShowtimeLabel: String {
-        guard let st = showtimes.first(where: { $0.id == selectedShowtime }) else { return "" }
-        return "\(st.time) · \(st.screen)"
-    }
-
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             Style.Palette.background.ignoresSafeArea()
@@ -54,7 +49,7 @@ struct MovieHomePage: View {
                     .padding(.bottom, Style.Layout.Page.screenBottom)
 
                 legendBar
-                    .padding(.bottom, selectedSeats.isEmpty ? Style.Layout.Page.legendBottom : 0)
+                    .padding(.bottom, Style.Layout.Page.legendBottom)
             }
 
             if showsTheatreView {
@@ -62,22 +57,7 @@ struct MovieHomePage: View {
                     .transition(.opacity)
                     .zIndex(1)
             }
-
-            // booking sheet slides up over the legend bar when seats are selected
-            if !selectedSeats.isEmpty {
-                VStack(spacing: 0) {
-                    Spacer()
-                    BookingSummarySheet(
-                        seats: selectedSeats,
-                        showtimeLabel: currentShowtimeLabel,
-                        onConfirm: { /* wire to payment flow */ }
-                    )
-                }
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-                .zIndex(2)
-            }
         }
-        .animation(.spring(response: 0.42, dampingFraction: 0.82), value: selectedSeats.isEmpty)
         .preferredColorScheme(.dark)
     }
 
