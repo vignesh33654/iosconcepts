@@ -42,6 +42,7 @@ struct Chair: View {
         ZStack {
             chairVisual
                 .frame(width: Style.Layout.Seat.width, height: Style.Layout.Seat.height)
+                #if !targetEnvironment(simulator)
                 .visualEffect { content, geometry in
                     content.colorEffect(
                         ShaderLibrary.chairShimmer(
@@ -50,6 +51,9 @@ struct Chair: View {
                         )
                     )
                 }
+                #else
+                .overlay(simulatorShimmer)
+                #endif
 
             Text("\(number)")
                 .font(.geist(Style.Typography.seatNumber, weight: .light))
@@ -74,6 +78,23 @@ struct Chair: View {
         withAnimation(.easeInOut(duration: ShimmerConfig.duration)) {
             shimmerPhase = ShimmerConfig.endPhase
         }
+    }
+
+    // Simulator fallback — plain gradient sweep (no Metal needed)
+    @ViewBuilder private var simulatorShimmer: some View {
+        let p = CGFloat(shimmerPhase)
+        LinearGradient(
+            stops: [
+                .init(color: .clear,              location: max(0, p - 0.35)),
+                .init(color: .white.opacity(0.55), location: p),
+                .init(color: .clear,              location: min(1, p + 0.35)),
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .blendMode(.screen)
+        .blur(radius: 2)
+        .allowsHitTesting(false)
     }
         .blendMode(.screen)
         .allowsHitTesting(false)
