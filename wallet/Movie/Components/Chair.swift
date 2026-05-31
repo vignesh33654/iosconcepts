@@ -28,39 +28,28 @@ struct Chair: View {
 
     @State private var showsNumber = true
     @State private var numberRevealTask: Task<Void, Never>?
-    @State private var rippleScale: CGFloat = 0.6
-    @State private var rippleOpacity: Double = 0
-    @State private var shimmerPhase: CGFloat = -1
+    @State private var shimmerPhase: Float = -0.3
 
     private typealias Style = MovieHomeStyle
 
-    private enum Ripple {
-        static let endScale: CGFloat = 2.6
-        static let startOpacity: Double = 0.65
-        static let duration: Double = 0.42
-        static let strokeWidth: CGFloat = 1.5
-    }
-
-    private enum Shimmer {
-        static let duration: Double = 0.55
-        static let bandWidth: CGFloat = 0.55   // width of the highlight band in gradient space
-        static let blurRadius: CGFloat = 3
-        static let opacity: Double = 0.72
+    private enum ShimmerConfig {
+        static let startPhase: Float = -0.3
+        static let endPhase: Float   =  1.3
+        static let duration: Double  =  0.65
     }
 
     var body: some View {
         ZStack {
-            // ripple ring — renders outside the seat bounds without clipping
-            Circle()
-                .strokeBorder(Style.Palette.accent.opacity(rippleOpacity), lineWidth: Ripple.strokeWidth)
-                .frame(width: Style.Layout.Seat.box, height: Style.Layout.Seat.box)
-                .scaleEffect(rippleScale)
-                .allowsHitTesting(false)
-
             chairVisual
                 .frame(width: Style.Layout.Seat.width, height: Style.Layout.Seat.height)
-                .overlay(shimmerOverlay)
-                .clipShape(Rectangle())
+                .visualEffect { content, geometry in
+                    content.colorEffect(
+                        ShaderLibrary.chairShimmer(
+                            .float2(geometry.size),
+                            .float(shimmerPhase)
+                        )
+                    )
+                }
 
             Text("\(number)")
                 .font(.geist(Style.Typography.seatNumber, weight: .light))
@@ -72,10 +61,7 @@ struct Chair: View {
             updateNumberVisibility(for: state)
         }
         .onChange(of: state) { _, newState in
-            if newState == .selected {
-                triggerRipple()
-                triggerShimmer()
-            }
+            if newState == .selected { triggerShimmer() }
             updateNumberVisibility(for: newState)
         }
         .onDisappear {
@@ -83,39 +69,14 @@ struct Chair: View {
         }
     }
 
-    // diagonal light-sweep overlay using a moving gradient
-    @ViewBuilder
-    private var shimmerOverlay: some View {
-        let lo = shimmerPhase - Shimmer.bandWidth
-        let hi = shimmerPhase + Shimmer.bandWidth
-        LinearGradient(
-            stops: [
-                .init(color: .clear,                         location: max(0, lo)),
-                .init(color: .white.opacity(Shimmer.opacity), location: shimmerPhase),
-                .init(color: .clear,                         location: min(1, hi)),
-            ],
-            startPoint: UnitPoint(x: 0, y: 0),
-            endPoint: UnitPoint(x: 1, y: 1)
-        )
-        .blur(radius: Shimmer.blurRadius)
+    private func triggerShimmer() {
+        shimmerPhase = ShimmerConfig.startPhase
+        withAnimation(.easeInOut(duration: ShimmerConfig.duration)) {
+            shimmerPhase = ShimmerConfig.endPhase
+        }
+    }
         .blendMode(.screen)
         .allowsHitTesting(false)
-    }
-
-    private func triggerRipple() {
-        rippleScale = 0.6
-        rippleOpacity = Ripple.startOpacity
-        withAnimation(.easeOut(duration: Ripple.duration)) {
-            rippleScale = Ripple.endScale
-            rippleOpacity = 0
-        }
-    }
-
-    private func triggerShimmer() {
-        shimmerPhase = -Shimmer.bandWidth
-        withAnimation(.easeInOut(duration: Shimmer.duration)) {
-            shimmerPhase = 1 + Shimmer.bandWidth
-        }
     }
 
     @ViewBuilder
@@ -431,4 +392,17 @@ private struct Seat3DSceneView: UIViewRepresentable {
     private func radians(_ degrees: Float) -> Float {
         degrees * .pi / 180
     }
+}
+
+#Preview {
+    @Previewable @State var state: SeatState = .available
+    VStack(spacing: 24) {
+        Chair(number: 4, state: state)
+        Button(state == .selected ? "Deselect" : "Select") {
+            state = state == .selected ? .available : .selected
+        }
+        .foregroundStyle(.white)
+    }
+    .padding(40)
+    .background(.black)
 }
