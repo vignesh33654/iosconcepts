@@ -30,24 +30,28 @@ struct MovieHomePage: View {
     @State private var showsSeatMapControls = false
     @State private var seatMapPerspective = ChairMapPerspectiveConfig.standard
     @State private var screenSheetHeight: CGFloat = Style.Layout.Screen.collapsedHeight
+    @State private var isScreenFullView = false
     private let soldSeats: Set<String> = MovieHomePage.initialSold
 
     var body: some View {
         GeometryReader { geometry in
             let screenSheetExpandedHeight = geometry.size.height * Style.Layout.Screen.expandedHeightRatio
-            let screenProgress = (screenSheetHeight - Style.Layout.Screen.collapsedHeight) / max(
+            let rawScreenProgress = (screenSheetHeight - Style.Layout.Screen.collapsedHeight) / max(
                 Style.Layout.Screen.collapsedHeight,
                 screenSheetExpandedHeight - Style.Layout.Screen.collapsedHeight
             )
+            let screenProgress = min(1, max(0, rawScreenProgress))
             let visibleLegendHeight = (Style.Layout.Legend.height + Style.Layout.Page.legendBottom) * (1 - screenProgress)
             let visibleScreenBottom = Style.Layout.Page.screenBottom * (1 - screenProgress)
-            let fixedHeaderHeight = Style.Layout.Page.headerTop + Style.Layout.Header.poster
+            let hiddenLegendOffset = (Style.Layout.Legend.height + Style.Layout.Page.legendBottom) * screenProgress
+            let fixedTopContentHeight = Style.Layout.Page.headerTop + Style.Layout.Header.poster + Style.Layout.Page.timesTop + Style.Layout.Time.height
             let visibleScreenLabelHeight = (Style.Layout.Screen.labelHeight + Style.Layout.Screen.gap) * (1 - screenProgress)
             let screenIndicatorHeight = visibleScreenLabelHeight + screenSheetHeight
             let scrollableHeight = max(
                 Style.Layout.Page.minimumScrollableHeight,
-                geometry.size.height - fixedHeaderHeight - screenIndicatorHeight - visibleScreenBottom - visibleLegendHeight
+                geometry.size.height - fixedTopContentHeight - screenIndicatorHeight - visibleScreenBottom - visibleLegendHeight
             )
+            let backgroundScale = isScreenFullView ? Style.Layout.Page.fullViewBackgroundScale : 1
 
             ZStack(alignment: .bottomTrailing) {
                 Style.Palette.background.ignoresSafeArea()
@@ -56,31 +60,45 @@ struct MovieHomePage: View {
                     header
                         .padding(.top, Style.Layout.Page.headerTop)
 
-                    ScrollView(.vertical, showsIndicators: true) {
-                        VStack(spacing: 0) {
-                            showtimeSelector
-                                .padding(.top, Style.Layout.Page.timesTop)
+                    showtimeSelector
+                        .padding(.top, Style.Layout.Page.timesTop)
 
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(spacing: 0) {
                             seatGrid
                                 .padding(.top, Style.Layout.Page.seatsTop)
                         }
                     }
                     .frame(height: scrollableHeight)
                     .scrollBounceBehavior(.basedOnSize, axes: .vertical)
+                }
+                .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
+                .scaleEffect(backgroundScale)
+                .clipped()
+                .animation(
+                    .spring(response: Style.Layout.Screen.springResponse, dampingFraction: Style.Layout.Screen.springDamping),
+                    value: isScreenFullView
+                )
 
+                VStack(spacing: 0) {
                     MovieScreenIndicator(
                         height: $screenSheetHeight,
-                        expandedHeight: screenSheetExpandedHeight
+                        expandedHeight: screenSheetExpandedHeight,
+                        fullHeight: geometry.size.height,
+                        isFullView: $isScreenFullView
                     )
                     .padding(.bottom, visibleScreenBottom)
 
                     legendBar
                         .padding(.bottom, Style.Layout.Page.legendBottom)
                 }
-                .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
+                .frame(width: geometry.size.width, height: geometry.size.height, alignment: .bottom)
+                .offset(y: hiddenLegendOffset)
                 .clipped()
 
-                seatMapControlOverlay
+                if !isScreenFullView {
+                    seatMapControlOverlay
+                }
 
                 if showsTheatreView {
                     theatreOverlay

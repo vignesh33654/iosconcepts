@@ -11,6 +11,8 @@ struct MovieHomeStyle {
         static let availableSeat = Color.white.opacity(0.8)
         static let soldSeat = Color.white.opacity(0.46)
         static let accent = Color(red: 0.96, green: 0.09, blue: 0.08)
+        static let screenCenter = Color(red: 0.96, green: 0.02, blue: 0.02)
+        static let screenEdge = Color.black
     }
 
     enum Layout {
@@ -71,6 +73,7 @@ struct MovieHomeStyle {
             static let screenBottom: CGFloat = 18
             static let legendBottom: CGFloat = 16
             static let minimumScrollableHeight: CGFloat = 120
+            static let fullViewBackgroundScale: CGFloat = 0.9
         }
 
         enum Header {
@@ -115,6 +118,14 @@ struct MovieHomeStyle {
             static let springResponse: TimeInterval = 0.45
             static let springDamping: Double = 0.88
             static let toggleSpringResponse: TimeInterval = 0.4
+            static let fullViewButton: CGFloat = 48
+            static let fullViewIcon: CGFloat = 16
+            static let fullViewTop: CGFloat = 24
+            static let fullViewTrailing: CGFloat = 24
+            static let fullViewBackgroundOpacity: Double = 0.42
+            static let fullViewButtonVisibilityThreshold: CGFloat = 0.95
+            static let gradientStartRadius: CGFloat = 20
+            static let gradientEndRadius: CGFloat = 380
             static let gap: CGFloat = 10
             static let tracking: CGFloat = 2.4
             static let arcHeight: CGFloat = 20
