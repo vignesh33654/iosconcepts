@@ -15,6 +15,26 @@ enum SeatState {
     }
 }
 
+struct SelectedChairModelConfig: Equatable {
+    var scale: Float = SelectedChairConfig.Model.scale
+    var pitchDegrees: Float = SelectedChairConfig.Model.pitchDegrees
+    var yawDegrees: Float = SelectedChairConfig.Model.yawDegrees
+    var rollDegrees: Float = SelectedChairConfig.Model.rollDegrees
+
+    static let standard = SelectedChairModelConfig()
+}
+
+private struct SelectedChairModelConfigKey: EnvironmentKey {
+    static let defaultValue = SelectedChairModelConfig.standard
+}
+
+extension EnvironmentValues {
+    var selectedChairModelConfig: SelectedChairModelConfig {
+        get { self[SelectedChairModelConfigKey.self] }
+        set { self[SelectedChairModelConfigKey.self] = newValue }
+    }
+}
+
 struct Chair: View {
     let number: Int
     let state: SeatState
@@ -26,6 +46,8 @@ struct Chair: View {
         self.showsSeatNumber = showsSeatNumber
     }
 
+    @Environment(\.selectedChairModelConfig) private var selectedChairModelConfig
+
     @State private var showsNumber = true
     @State private var numberRevealTask: Task<Void, Never>?
 
@@ -35,6 +57,7 @@ struct Chair: View {
         ZStack {
             chairVisual
                 .frame(width: Style.Layout.Seat.width, height: Style.Layout.Seat.height)
+                .animation(.easeInOut(duration: 0.28), value: state)
 
             Text("\(number)")
                 .font(.geist(Style.Typography.seatNumber, weight: .light))
@@ -58,7 +81,11 @@ struct Chair: View {
     private var chairVisual: some View {
         switch state {
         case .selected:
-            SelectedChair3D()
+            SelectedChair3D(config: selectedChairModelConfig)
+                .transition(.asymmetric(
+                    insertion: .identity,
+                    removal: .scale(scale: 0.5).combined(with: .opacity)
+                ))
         case .available:
             movieAssetImage(Style.Asset.availableChair)
                 .renderingMode(.original)
@@ -97,7 +124,7 @@ struct Chair: View {
 
 private enum SelectedChairConfig {
     enum Asset {
-        static let name = "cinema+seat+3d+model"
+        static let name = "red-leather-chair-optimized"
         static let fileExtension = "usdz"
     }
 
@@ -106,6 +133,9 @@ private enum SelectedChairConfig {
         static let height = MovieHomeStyle.Layout.Seat.height
         static let offsetX: CGFloat = 0
         static let offsetY: CGFloat = 0
+        // Extra room around the SCNView so the chair can grow/spin during the
+        // entrance animation (or under a scaled-up config) without clipping.
+        static let scaleHeadroom: CGFloat = 1.5
     }
 
     enum Animation {
@@ -121,7 +151,7 @@ private enum SelectedChairConfig {
     }
 
     enum Model {
-        static let scale: Float = 1
+        static let scale: Float = 1.5
         static let pitchDegrees: Float = -90
         static let yawDegrees: Float = -90
         static let rollDegrees: Float = 0
@@ -136,8 +166,10 @@ private enum SelectedChairConfig {
     }
 
     enum Lighting {
-        static let ambientIntensity: CGFloat = 950
-        static let keyIntensity: CGFloat = 720
+        // Drop ambient way down so the directional light's shading actually shows.
+        // High ambient was the only reason the chair looked flat.
+        static let ambientIntensity: CGFloat = 300
+        static let keyIntensity: CGFloat = 400
         static let keyPitch: Float = -0.55
         static let keyYaw: Float = 0.3
         static let keyRoll: Float = 0
@@ -147,27 +179,22 @@ private enum SelectedChairConfig {
 private struct SelectedChair3D: View {
     static let numberRevealDelay = SelectedChairConfig.Animation.spinTime + SelectedChairConfig.Animation.settleTime
 
-    @State private var opacity = SelectedChairConfig.Animation.hidden
+    let config: SelectedChairModelConfig
 
     var body: some View {
-        Seat3DSceneView()
-            .frame(width: SelectedChairConfig.Layout.width, height: SelectedChairConfig.Layout.height)
-            .opacity(opacity)
+        Seat3DSceneView(config: config)
+            .frame(
+                width: SelectedChairConfig.Layout.width * SelectedChairConfig.Layout.scaleHeadroom,
+                height: SelectedChairConfig.Layout.height * SelectedChairConfig.Layout.scaleHeadroom
+            )
             .offset(x: SelectedChairConfig.Layout.offsetX, y: SelectedChairConfig.Layout.offsetY)
             .allowsHitTesting(false)
-            .onAppear(perform: animateIn)
-    }
-
-    private func animateIn() {
-        opacity = SelectedChairConfig.Animation.hidden
-
-        withAnimation(.easeOut(duration: SelectedChairConfig.Animation.fadeIn)) {
-            opacity = SelectedChairConfig.Animation.visible
-        }
     }
 }
 
 private struct Seat3DSceneView: UIViewRepresentable {
+    let config: SelectedChairModelConfig
+
     private static let sourceScene: SCNScene? = {
         guard let url = Bundle.main.url(
             forResource: SelectedChairConfig.Asset.name,
@@ -177,6 +204,14 @@ private struct Seat3DSceneView: UIViewRepresentable {
         }
         return try? SCNScene(url: url)
     }()
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    final class Coordinator {
+        var lastAppliedConfig: SelectedChairModelConfig?
+    }
 
     func makeUIView(context: Context) -> SCNView {
         let view = SCNView()
@@ -190,10 +225,19 @@ private struct Seat3DSceneView: UIViewRepresentable {
         let scene = makeScene()
         view.scene = scene
         view.pointOfView = scene.rootNode.childNode(withName: "seat-camera", recursively: false)
+        context.coordinator.lastAppliedConfig = config
         return view
     }
 
-    func updateUIView(_ uiView: SCNView, context: Context) {}
+    func updateUIView(_ uiView: SCNView, context: Context) {
+        // Only rebuild when config actually changes — otherwise the entrance
+        // animation re-fires on every incidental SwiftUI update.
+        guard context.coordinator.lastAppliedConfig != config else { return }
+        context.coordinator.lastAppliedConfig = config
+        let scene = makeScene()
+        uiView.scene = scene
+        uiView.pointOfView = scene.rootNode.childNode(withName: "seat-camera", recursively: false)
+    }
 
     private func makeScene() -> SCNScene {
         let scene = SCNScene()
@@ -218,23 +262,20 @@ private struct Seat3DSceneView: UIViewRepresentable {
     }
 
     private func setFinalTransform(on node: SCNNode) {
-        node.scale = uniformScale(SelectedChairConfig.Model.scale)
+        node.scale = uniformScale(config.scale)
         node.eulerAngles = SCNVector3(
-            radians(SelectedChairConfig.Model.pitchDegrees),
-            radians(SelectedChairConfig.Model.yawDegrees),
-            radians(SelectedChairConfig.Model.rollDegrees)
+            radians(config.pitchDegrees),
+            radians(config.yawDegrees),
+            radians(config.rollDegrees)
         )
     }
 
     private func prepareEntranceAnimation(on node: SCNNode) {
-        node.opacity = 0
-        node.scale = uniformScale(SelectedChairConfig.Animation.startSize)
+        node.scale = uniformScale(config.scale * SelectedChairConfig.Animation.startSize)
         node.eulerAngles.y += radians(Float(SelectedChairConfig.Animation.spin))
     }
 
     private func animateModel(_ node: SCNNode) {
-        let fade = SCNAction.fadeOpacity(to: 1, duration: SelectedChairConfig.Animation.fadeIn)
-
         let spin = SCNAction.rotateBy(
             x: 0,
             y: CGFloat(radians(Float(-SelectedChairConfig.Animation.spin))),
@@ -243,18 +284,15 @@ private struct Seat3DSceneView: UIViewRepresentable {
         )
         spin.timingMode = .easeOut
 
-        let grow = SCNAction.scale(to: CGFloat(SelectedChairConfig.Animation.popSize), duration: SelectedChairConfig.Animation.spinTime)
+        let grow = SCNAction.scale(to: CGFloat(config.scale * SelectedChairConfig.Animation.popSize), duration: SelectedChairConfig.Animation.spinTime)
         grow.timingMode = .easeOut
 
-        let settle = SCNAction.scale(to: CGFloat(SelectedChairConfig.Animation.endSize), duration: SelectedChairConfig.Animation.settleTime)
+        let settle = SCNAction.scale(to: CGFloat(config.scale), duration: SelectedChairConfig.Animation.settleTime)
         settle.timingMode = .easeInEaseOut
 
-        node.runAction(.group([
-            fade,
-            .sequence([
-                .group([spin, grow]),
-                settle
-            ])
+        node.runAction(.sequence([
+            .group([spin, grow]),
+            settle
         ]))
     }
 
@@ -284,7 +322,11 @@ private struct Seat3DSceneView: UIViewRepresentable {
 
         let camera = SCNCamera()
         camera.usesOrthographicProjection = true
-        camera.orthographicScale = max(modelHeight, modelWidth / viewAspect) / SelectedChairConfig.Camera.fill
+        // Compensate the larger SCNView frame so the chair keeps its original visual size
+        // but has room around it for the pop/spin without hitting the view's clip edges.
+        camera.orthographicScale = max(modelHeight, modelWidth / viewAspect)
+            / SelectedChairConfig.Camera.fill
+            * Double(SelectedChairConfig.Layout.scaleHeadroom)
         camera.zNear = SelectedChairConfig.Camera.zNear
         camera.zFar = SelectedChairConfig.Camera.zFar
 
@@ -350,6 +392,13 @@ private struct Seat3DSceneView: UIViewRepresentable {
         let key = SCNLight()
         key.type = .directional
         key.intensity = SelectedChairConfig.Lighting.keyIntensity
+        // Self-shadowing: armrest darkens the seat under it, headrest shadows
+        // the backrest. This is the cue that reads as "3D" instead of flat.
+        key.castsShadow = true
+        key.shadowMode = .deferred
+        key.shadowRadius = 3
+        key.shadowSampleCount = 16
+        key.shadowColor = UIColor(white: 0, alpha: 0.5)
         let keyNode = SCNNode()
         keyNode.light = key
         keyNode.eulerAngles = SCNVector3(

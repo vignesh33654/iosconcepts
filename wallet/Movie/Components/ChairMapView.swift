@@ -22,12 +22,24 @@ struct ChairMapPerspectiveConfig: Equatable {
     var anchorX: CGFloat = 0.5
     var anchorY: CGFloat = 0.5
     var showsAllSelectedPreview: Bool = false
-    var chairRotation: Double = 0
+    var selectedChairScale: Double = Double(SelectedChairModelConfig.standard.scale)
+    var selectedChairPitch: Double = Double(SelectedChairModelConfig.standard.pitchDegrees)
+    var selectedChairYaw: Double = Double(SelectedChairModelConfig.standard.yawDegrees)
+    var selectedChairRoll: Double = Double(SelectedChairModelConfig.standard.rollDegrees)
 
     static let standard = ChairMapPerspectiveConfig()
 
     var anchor: UnitPoint {
         UnitPoint(x: anchorX, y: anchorY)
+    }
+
+    var selectedChairModelConfig: SelectedChairModelConfig {
+        SelectedChairModelConfig(
+            scale: Float(selectedChairScale),
+            pitchDegrees: Float(selectedChairPitch),
+            yawDegrees: Float(selectedChairYaw),
+            rollDegrees: Float(selectedChairRoll)
+        )
     }
 
     var swiftSnippet: String {
@@ -43,7 +55,10 @@ struct ChairMapPerspectiveConfig: Equatable {
             anchorX: \(format(Double(anchorX))),
             anchorY: \(format(Double(anchorY))),
             showsAllSelectedPreview: \(showsAllSelectedPreview),
-            chairRotation: \(format(chairRotation))
+            selectedChairScale: \(format(selectedChairScale)),
+            selectedChairPitch: \(format(selectedChairPitch)),
+            selectedChairYaw: \(format(selectedChairYaw)),
+            selectedChairRoll: \(format(selectedChairRoll))
         )
         """
     }
@@ -135,7 +150,7 @@ struct ChairMapView: View {
             toggle(id, state: state)
         } label: {
             Chair(number: number, state: state)
-                .rotationEffect(.degrees(perspectiveConfig.chairRotation))
+                .environment(\.selectedChairModelConfig, perspectiveConfig.selectedChairModelConfig)
                 .opacity(showsSeat ? 1 : 0)
                 .contentShape(Rectangle())
         }
@@ -208,12 +223,15 @@ struct ChairMapPerspectiveControls: View {
                         .foregroundStyle(.white.opacity(0.75))
                         .tint(MovieHomeStyle.Palette.accent)
 
-                    control("Chair angle", value: $config.chairRotation, range: -180...180, format: "%.0f°")
+                    control("Selected scale", value: $config.selectedChairScale, range: 0.1...5, format: "%.2f")
+                    control("Selected pitch", value: $config.selectedChairPitch, range: -360...360, format: "%.0f°")
+                    control("Selected yaw", value: $config.selectedChairYaw, range: -360...360, format: "%.0f°")
+                    control("Selected roll", value: $config.selectedChairRoll, range: -360...360, format: "%.0f°")
                     control("X", value: $config.rotationX, range: -80...80, format: "%.0f°")
                     control("Y", value: $config.rotationY, range: -80...80, format: "%.0f°")
                     control("Z", value: $config.rotationZ, range: -45...45, format: "%.0f°")
                     control("Depth", value: perspectiveBinding, range: 0...1, format: "%.2f")
-                    control("Scale", value: scaleBinding, range: 0.5...1.5, format: "%.2f")
+                    control("Map scale", value: scaleBinding, range: 0.1...5, format: "%.2f")
                     control("Move X", value: offsetXBinding, range: -160...160, format: "%.0f")
                     control("Move Y", value: offsetYBinding, range: -220...220, format: "%.0f")
                     control("Anchor X", value: anchorXBinding, range: 0...1, format: "%.2f")

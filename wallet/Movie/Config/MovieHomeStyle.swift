@@ -98,7 +98,7 @@ struct MovieHomeStyle {
             static let rowGap: CGFloat = 0
             static let aisleGap: CGFloat = 32
             static let numberTop: CGFloat = 10
-            static let numberOffsetY: CGFloat = -1
+            static let numberOffsetY: CGFloat = -4
         }
 
         enum Screen {
