@@ -29,46 +29,70 @@ struct MovieHomePage: View {
     @State private var showsTheatreView = false
     @State private var showsSeatMapControls = false
     @State private var seatMapPerspective = ChairMapPerspectiveConfig.standard
-    @State private var screenSheetHeight: CGFloat = 1
-    private let screenSheetExpandedHeight: CGFloat = UIScreen.main.bounds.height
+    @State private var screenSheetHeight: CGFloat = Style.Layout.Screen.collapsedHeight
     private let soldSeats: Set<String> = MovieHomePage.initialSold
 
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            Style.Palette.background.ignoresSafeArea()
+        GeometryReader { geometry in
+            let screenSheetExpandedHeight = geometry.size.height * Style.Layout.Screen.expandedHeightRatio
+            let screenProgress = (screenSheetHeight - Style.Layout.Screen.collapsedHeight) / max(
+                Style.Layout.Screen.collapsedHeight,
+                screenSheetExpandedHeight - Style.Layout.Screen.collapsedHeight
+            )
+            let visibleLegendHeight = (Style.Layout.Legend.height + Style.Layout.Page.legendBottom) * (1 - screenProgress)
+            let visibleScreenBottom = Style.Layout.Page.screenBottom * (1 - screenProgress)
+            let fixedHeaderHeight = Style.Layout.Page.headerTop + Style.Layout.Header.poster
+            let visibleScreenLabelHeight = (Style.Layout.Screen.labelHeight + Style.Layout.Screen.gap) * (1 - screenProgress)
+            let screenIndicatorHeight = visibleScreenLabelHeight + screenSheetHeight
+            let scrollableHeight = max(
+                Style.Layout.Page.minimumScrollableHeight,
+                geometry.size.height - fixedHeaderHeight - screenIndicatorHeight - visibleScreenBottom - visibleLegendHeight
+            )
 
-            VStack(spacing: 0) {
-                header
-                    .padding(.top, Style.Layout.Page.headerTop)
+            ZStack(alignment: .bottomTrailing) {
+                Style.Palette.background.ignoresSafeArea()
 
-                showtimeSelector
-                    .padding(.top, Style.Layout.Page.timesTop)
+                VStack(spacing: 0) {
+                    header
+                        .padding(.top, Style.Layout.Page.headerTop)
 
-                seatGrid
-                    .padding(.top, Style.Layout.Page.seatsTop)
+                    ScrollView(.vertical, showsIndicators: true) {
+                        VStack(spacing: 0) {
+                            showtimeSelector
+                                .padding(.top, Style.Layout.Page.timesTop)
 
-                Spacer(minLength: 0)
+                            seatGrid
+                                .padding(.top, Style.Layout.Page.seatsTop)
+                        }
+                    }
+                    .frame(height: scrollableHeight)
+                    .scrollBounceBehavior(.basedOnSize, axes: .vertical)
 
-                MovieScreenIndicator(
-                    height: $screenSheetHeight,
-                    expandedHeight: screenSheetExpandedHeight
-                )
-                .padding(.bottom, Style.Layout.Page.screenBottom)
+                    MovieScreenIndicator(
+                        height: $screenSheetHeight,
+                        expandedHeight: screenSheetExpandedHeight
+                    )
+                    .padding(.bottom, visibleScreenBottom)
 
-                legendBar
-                    .padding(.bottom, Style.Layout.Page.legendBottom)
-            }
+                    legendBar
+                        .padding(.bottom, Style.Layout.Page.legendBottom)
+                }
+                .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
+                .clipped()
 
-            seatMapControlOverlay
+                seatMapControlOverlay
 
-            if showsTheatreView {
-                theatreOverlay
-                    .transition(.opacity)
-                    .zIndex(1)
+                if showsTheatreView {
+                    theatreOverlay
+                        .transition(.opacity)
+                        .zIndex(1)
+                }
             }
         }
+        .ignoresSafeArea(edges: .bottom)
         .preferredColorScheme(.dark)
     }
+
 
     private var header: some View {
         HStack(spacing: Style.Layout.Header.gap) {
@@ -170,38 +194,41 @@ struct MovieHomePage: View {
             VStack {
                 Spacer(minLength: 0)
 
-                HStack(alignment: .bottom, spacing: 12) {
+                HStack(alignment: .bottom, spacing: Style.Layout.SeatMapControls.gap) {
                     Spacer(minLength: 0)
 
                     if showsSeatMapControls {
                         ChairMapPerspectiveControls(
                             config: $seatMapPerspective,
-                            maxHeight: geometry.size.height * 0.5
+                            maxHeight: geometry.size.height * Style.Layout.SeatMapControls.maxHeightRatio
                         )
-                        .frame(width: 260)
+                        .frame(width: Style.Layout.SeatMapControls.width)
                         .transition(.move(edge: .trailing).combined(with: .opacity))
                     }
 
                     Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
+                        withAnimation(.easeInOut(duration: Style.Layout.SeatMapControls.animationDuration)) {
                             showsSeatMapControls.toggle()
                         }
                     } label: {
                         Image(systemName: "slider.horizontal.3")
-                            .font(.system(size: 18, weight: .medium))
+                            .font(.system(size: Style.Layout.SeatMapControls.icon, weight: .medium))
                             .foregroundStyle(showsSeatMapControls ? Style.Palette.accent : .white)
-                            .frame(width: 44, height: 44)
-                            .background(.black.opacity(0.82), in: Circle())
+                            .frame(width: Style.Layout.SeatMapControls.button, height: Style.Layout.SeatMapControls.button)
+                            .background(.black.opacity(Style.Layout.SeatMapControls.backgroundOpacity), in: Circle())
                             .overlay {
                                 Circle()
-                                    .strokeBorder(.white.opacity(0.18), lineWidth: 1)
+                                    .strokeBorder(
+                                        .white.opacity(Style.Layout.SeatMapControls.borderOpacity),
+                                        lineWidth: Style.Layout.SeatMapControls.border
+                                    )
                             }
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Seat map perspective controls")
                 }
                 .padding(.trailing, Style.Layout.Page.padding)
-                .padding(.bottom, Style.Layout.Legend.height + Style.Layout.Page.legendBottom + 10)
+                .padding(.bottom, Style.Layout.Legend.height + Style.Layout.Page.legendBottom + Style.Layout.SeatMapControls.bottomGap)
             }
         }
     }

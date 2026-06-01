@@ -3,27 +3,26 @@ import SwiftUI
 struct MovieScreenIndicator: View {
     private typealias Style = MovieHomeStyle
 
-    private let collapsedHeight: CGFloat = 1
-    private let touchTargetHeight: CGFloat = 88
-    private let expandThreshold: CGFloat = 0.2
-    private let collapseThreshold: CGFloat = 0.5
-    private let flickVelocity: CGFloat = 400
-
     @Binding var height: CGFloat
     let expandedHeight: CGFloat
 
     @State private var dragAnchor: CGFloat? = nil
 
     var body: some View {
+        let collapsedHeight = Style.Layout.Screen.collapsedHeight
         let clampedHeight = min(expandedHeight, max(collapsedHeight, height))
         let progress = (clampedHeight - collapsedHeight) / max(1, expandedHeight - collapsedHeight)
+        let visibleLabelHeight = Style.Layout.Screen.labelHeight * (1 - progress)
+        let visibleGap = Style.Layout.Screen.gap * (1 - progress)
 
-        VStack(spacing: Style.Layout.Screen.gap) {
+        VStack(spacing: visibleGap) {
             Text("SCREEN THIS WAY")
                 .font(.geist(Style.Typography.screenLabel))
                 .tracking(Style.Layout.Screen.tracking)
                 .foregroundStyle(.white.opacity(0.78))
                 .opacity(1 - progress)
+                .frame(height: visibleLabelHeight)
+                .clipped()
                 .allowsHitTesting(false)
 
             Rectangle()
@@ -32,19 +31,23 @@ struct MovieScreenIndicator: View {
                 .frame(height: clampedHeight)
                 .overlay {
                     Color.clear
-                        .frame(height: max(clampedHeight, touchTargetHeight))
+                        .frame(height: max(clampedHeight, Style.Layout.Screen.touchTargetHeight))
                         .contentShape(Rectangle())
                         .gesture(dragGesture)
                         .onTapGesture { toggle() }
                 }
         }
         .zIndex(100)
-        .animation(.spring(response: 0.45, dampingFraction: 0.88), value: height)
+        .animation(
+            .spring(response: Style.Layout.Screen.springResponse, dampingFraction: Style.Layout.Screen.springDamping),
+            value: height
+        )
     }
 
     private var dragGesture: some Gesture {
         DragGesture(minimumDistance: 4)
             .onChanged { value in
+                let collapsedHeight = Style.Layout.Screen.collapsedHeight
                 let anchor: CGFloat
                 if let existing = dragAnchor {
                     anchor = existing
@@ -55,34 +58,39 @@ struct MovieScreenIndicator: View {
                 height = min(expandedHeight, max(collapsedHeight, anchor - value.translation.height))
             }
             .onEnded { value in
+                let collapsedHeight = Style.Layout.Screen.collapsedHeight
                 let velocity = value.predictedEndTranslation.height - value.translation.height
                 let progress = (height - collapsedHeight) / max(1, expandedHeight - collapsedHeight)
-                let wasExpanded = (dragAnchor ?? collapsedHeight) > expandedHeight * 0.5
+                let wasExpanded = (dragAnchor ?? collapsedHeight) > expandedHeight * Style.Layout.Screen.collapseThreshold
 
                 let shouldExpand: Bool
                 if wasExpanded {
-                    shouldExpand = !(progress < collapseThreshold || velocity > flickVelocity)
+                    shouldExpand = !(progress < Style.Layout.Screen.collapseThreshold || velocity > Style.Layout.Screen.flickVelocity)
                 } else {
-                    shouldExpand = progress > expandThreshold || velocity < -flickVelocity
+                    shouldExpand = progress > Style.Layout.Screen.expandThreshold || velocity < -Style.Layout.Screen.flickVelocity
                 }
 
                 dragAnchor = nil
-                withAnimation(.spring(response: 0.45, dampingFraction: 0.88)) {
+                withAnimation(.spring(response: Style.Layout.Screen.springResponse, dampingFraction: Style.Layout.Screen.springDamping)) {
                     height = shouldExpand ? expandedHeight : collapsedHeight
                 }
             }
     }
 
     private func toggle() {
-        let target: CGFloat = height > expandedHeight * 0.5 ? collapsedHeight : expandedHeight
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.88)) {
+        let collapsedHeight = Style.Layout.Screen.collapsedHeight
+        let target: CGFloat = height > expandedHeight * Style.Layout.Screen.collapseThreshold ? collapsedHeight : expandedHeight
+        withAnimation(.spring(response: Style.Layout.Screen.toggleSpringResponse, dampingFraction: Style.Layout.Screen.springDamping)) {
             height = target
         }
     }
 }
 
 #Preview {
-    MovieScreenIndicator(height: .constant(1), expandedHeight: 800)
+    MovieScreenIndicator(
+        height: .constant(MovieHomeStyle.Layout.Screen.collapsedHeight),
+        expandedHeight: 400
+    )
         .padding()
         .background(MovieHomeStyle.Palette.background)
 }

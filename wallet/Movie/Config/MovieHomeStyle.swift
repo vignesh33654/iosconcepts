@@ -51,6 +51,8 @@ struct MovieHomeStyle {
         static let screenArcHorizontalPadding = Screen.arcPadding
         static let screenArcLineWidth = Screen.lineWidth
         static let screenArcControlDepth = Screen.curve
+        static let screenCollapsedHeight = Screen.collapsedHeight
+        static let screenExpandedHeightRatio = Screen.expandedHeightRatio
 
         static let legendSpacing = Legend.gap
         static let legendItemGap = Legend.itemGap
@@ -68,6 +70,7 @@ struct MovieHomeStyle {
             static let seatsTop: CGFloat = 24
             static let screenBottom: CGFloat = 18
             static let legendBottom: CGFloat = 16
+            static let minimumScrollableHeight: CGFloat = 120
         }
 
         enum Header {
@@ -102,12 +105,35 @@ struct MovieHomeStyle {
         }
 
         enum Screen {
+            static let collapsedHeight: CGFloat = 1
+            static let expandedHeightRatio: CGFloat = 0.5 // Percent of the available iPhone height.
+            static let labelHeight: CGFloat = 14
+            static let touchTargetHeight: CGFloat = 88
+            static let expandThreshold: CGFloat = 0.2
+            static let collapseThreshold: CGFloat = 0.5
+            static let flickVelocity: CGFloat = 400
+            static let springResponse: TimeInterval = 0.45
+            static let springDamping: Double = 0.88
+            static let toggleSpringResponse: TimeInterval = 0.4
             static let gap: CGFloat = 10
             static let tracking: CGFloat = 2.4
             static let arcHeight: CGFloat = 20
             static let arcPadding: CGFloat = 32
             static let lineWidth: CGFloat = 1.6
             static let curve: CGFloat = 0.6
+        }
+
+        enum SeatMapControls {
+            static let gap: CGFloat = 12
+            static let maxHeightRatio: CGFloat = 0.5
+            static let width: CGFloat = 260
+            static let button: CGFloat = 44
+            static let icon: CGFloat = 18
+            static let bottomGap: CGFloat = 10
+            static let animationDuration: TimeInterval = 0.2
+            static let backgroundOpacity: Double = 0.82
+            static let borderOpacity: Double = 0.18
+            static let border: CGFloat = 1
         }
 
         enum Legend {
