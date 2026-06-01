@@ -2,6 +2,45 @@ import SwiftUI
 import SceneKit
 import UIKit
 
+struct TheatrePanoramaView: View {
+    let imageName: String
+    let onClose: () -> Void
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            PanoramaView(imageName: imageName)
+                .ignoresSafeArea()
+
+            ZStack {
+                Text("Theatre view")
+                    .font(.geist(18, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity, alignment: .center)
+
+                HStack {
+                    Spacer()
+
+                    Button(action: onClose) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: MovieHomeStyle.Layout.Theatre.closeIcon, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(
+                                width: MovieHomeStyle.Layout.Theatre.closeButton,
+                                height: MovieHomeStyle.Layout.Theatre.closeButton
+                            )
+                            .background(.black.opacity(MovieHomeStyle.Layout.Theatre.closeBackgroundOpacity), in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Close theatre view")
+                }
+            }
+            .padding(.top, MovieHomeStyle.Layout.Theatre.closeTop - 8)
+            .padding(.leading, MovieHomeStyle.Layout.Theatre.closeTrailing)
+            .padding(.trailing, 12)
+        }
+    }
+}
+
 struct PanoramaView: UIViewRepresentable {
     let imageName: String
 

@@ -288,25 +288,10 @@ struct MovieHomePage: View {
     }
 
     private var theatreOverlay: some View {
-        ZStack(alignment: .topTrailing) {
-            PanoramaView(imageName: Style.Asset.theatre)
-                .ignoresSafeArea()
-
-            Button {
-                withAnimation(.easeInOut) {
-                    showsTheatreView = false
-                }
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: Style.Layout.Theatre.closeIcon, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: Style.Layout.Theatre.closeButton, height: Style.Layout.Theatre.closeButton)
-                    .background(.black.opacity(Style.Layout.Theatre.closeBackgroundOpacity), in: Circle())
+        TheatrePanoramaView(imageName: Style.Asset.theatre) {
+            withAnimation(.easeInOut) {
+                showsTheatreView = false
             }
-            .buttonStyle(.plain)
-            .padding(.top, Style.Layout.Theatre.closeTop)
-            .padding(.trailing, Style.Layout.Theatre.closeTrailing)
-            .accessibilityLabel("Close theatre view")
         }
     }
 }

@@ -246,7 +246,9 @@ private struct Seat3DSceneView: UIViewRepresentable {
 
         if let sourceScene = Self.sourceScene {
             for child in sourceScene.rootNode.childNodes {
-                modelRoot.addChildNode(child.clone())
+                let clonedChild = child.clone()
+                prepareUniqueMaterials(in: clonedChild)
+                modelRoot.addChildNode(clonedChild)
             }
         }
 
@@ -259,6 +261,16 @@ private struct Seat3DSceneView: UIViewRepresentable {
         addLights(to: scene)
         animateModel(modelRoot)
         return scene
+    }
+
+    private func prepareUniqueMaterials(in node: SCNNode) {
+        node.enumerateHierarchy { child, _ in
+            guard let geometry = child.geometry?.copy() as? SCNGeometry else { return }
+            geometry.materials = geometry.materials.compactMap { material in
+                material.copy() as? SCNMaterial
+            }
+            child.geometry = geometry
+        }
     }
 
     private func setFinalTransform(on node: SCNNode) {

@@ -123,8 +123,8 @@ struct MovieHomeStyle {
             static let button: CGFloat = 48
             static let radius: CGFloat = 12
             static let border: CGFloat = 1
-            static let closeButton: CGFloat = 38
-            static let closeIcon: CGFloat = 13
+            static let closeButton: CGFloat = 48
+            static let closeIcon: CGFloat = 14
             static let closeTop: CGFloat = 42
             static let closeTrailing: CGFloat = 22
             static let closeBackgroundOpacity: Double = 0.42
