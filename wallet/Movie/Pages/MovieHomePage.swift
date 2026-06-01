@@ -27,6 +27,8 @@ struct MovieHomePage: View {
     @State private var selectedShowtime: Showtime.ID = "1125"
     @State private var selectedSeats: Set<String> = []
     @State private var showsTheatreView = false
+    @State private var showsSeatMapControls = false
+    @State private var seatMapPerspective = ChairMapPerspectiveConfig.standard
     private let soldSeats: Set<String> = MovieHomePage.initialSold
 
     var body: some View {
@@ -51,6 +53,8 @@ struct MovieHomePage: View {
                 legendBar
                     .padding(.bottom, Style.Layout.Page.legendBottom)
             }
+
+            seatMapControlOverlay
 
             if showsTheatreView {
                 theatreOverlay
@@ -148,7 +152,11 @@ struct MovieHomePage: View {
     }
 
     private var seatGrid: some View {
-        ChairMapView(selectedSeats: $selectedSeats, soldSeats: soldSeats)
+        ChairMapView(
+            selectedSeats: $selectedSeats,
+            soldSeats: soldSeats,
+            perspectiveConfig: seatMapPerspective
+        )
     }
 
     private var screenIndicator: some View {
@@ -175,6 +183,47 @@ struct MovieHomePage: View {
             startPoint: .leading,
             endPoint: .trailing
         )
+    }
+
+    private var seatMapControlOverlay: some View {
+        GeometryReader { geometry in
+            VStack {
+                Spacer(minLength: 0)
+
+                HStack(alignment: .bottom, spacing: 12) {
+                    Spacer(minLength: 0)
+
+                    if showsSeatMapControls {
+                        ChairMapPerspectiveControls(
+                            config: $seatMapPerspective,
+                            maxHeight: geometry.size.height * 0.5
+                        )
+                        .frame(width: 260)
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
+                    }
+
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            showsSeatMapControls.toggle()
+                        }
+                    } label: {
+                        Image(systemName: "slider.horizontal.3")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundStyle(showsSeatMapControls ? Style.Palette.accent : .white)
+                            .frame(width: 44, height: 44)
+                            .background(.black.opacity(0.82), in: Circle())
+                            .overlay {
+                                Circle()
+                                    .strokeBorder(.white.opacity(0.18), lineWidth: 1)
+                            }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Seat map perspective controls")
+                }
+                .padding(.trailing, Style.Layout.Page.padding)
+                .padding(.bottom, Style.Layout.Legend.height + Style.Layout.Page.legendBottom + 10)
+            }
+        }
     }
 
     private var legendBar: some View {
