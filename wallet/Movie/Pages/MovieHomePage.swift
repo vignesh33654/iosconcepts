@@ -29,6 +29,8 @@ struct MovieHomePage: View {
     @State private var showsTheatreView = false
     @State private var showsSeatMapControls = false
     @State private var seatMapPerspective = ChairMapPerspectiveConfig.standard
+    @State private var screenSheetHeight: CGFloat = 1
+    private let screenSheetExpandedHeight: CGFloat = UIScreen.main.bounds.height
     private let soldSeats: Set<String> = MovieHomePage.initialSold
 
     var body: some View {
@@ -47,8 +49,11 @@ struct MovieHomePage: View {
 
                 Spacer(minLength: 0)
 
-                screenIndicator
-                    .padding(.bottom, Style.Layout.Page.screenBottom)
+                MovieScreenIndicator(
+                    height: $screenSheetHeight,
+                    expandedHeight: screenSheetExpandedHeight
+                )
+                .padding(.bottom, Style.Layout.Page.screenBottom)
 
                 legendBar
                     .padding(.bottom, Style.Layout.Page.legendBottom)
@@ -159,31 +164,6 @@ struct MovieHomePage: View {
         )
     }
 
-    private var screenIndicator: some View {
-        VStack(spacing: Style.Layout.Screen.gap) {
-            Text("SCREEN THIS WAY")
-                .font(.geist(Style.Typography.screenLabel))
-                .tracking(Style.Layout.Screen.tracking)
-                .foregroundStyle(.white.opacity(0.78))
-
-            ScreenArc()
-                .stroke(screenArcGradient, style: StrokeStyle(lineWidth: Style.Layout.Screen.lineWidth, lineCap: .round))
-                .frame(height: Style.Layout.Screen.arcHeight)
-                .padding(.horizontal, Style.Layout.Screen.arcPadding)
-        }
-    }
-
-    private var screenArcGradient: LinearGradient {
-        LinearGradient(
-            colors: [
-                Style.Palette.accent.opacity(0),
-                Style.Palette.accent.opacity(0.95),
-                Style.Palette.accent.opacity(0),
-            ],
-            startPoint: .leading,
-            endPoint: .trailing
-        )
-    }
 
     private var seatMapControlOverlay: some View {
         GeometryReader { geometry in
@@ -293,22 +273,6 @@ struct MovieHomePage: View {
                 showsTheatreView = false
             }
         }
-    }
-}
-
-private struct ScreenArc: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let start = CGPoint(x: rect.minX, y: rect.minY)
-        let end = CGPoint(x: rect.maxX, y: rect.minY)
-        let control = CGPoint(
-            x: rect.midX,
-            y: rect.maxY + rect.height * MovieHomeStyle.Layout.Screen.curve
-        )
-
-        path.move(to: start)
-        path.addQuadCurve(to: end, control: control)
-        return path
     }
 }
 
