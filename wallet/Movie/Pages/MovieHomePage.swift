@@ -85,6 +85,7 @@ struct MovieHomePage: View {
                         height: $screenSheetHeight,
                         expandedHeight: screenSheetExpandedHeight,
                         fullHeight: geometry.size.height,
+                        shouldRevealPreview: selectedSeats.count == 2,
                         isFullView: $isScreenFullView
                     )
                     .padding(.bottom, visibleScreenBottom)
