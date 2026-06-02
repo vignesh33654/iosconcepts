@@ -51,7 +51,7 @@ struct MovieHomePage: View {
                 Style.Layout.Page.minimumScrollableHeight,
                 geometry.size.height - fixedTopContentHeight - screenIndicatorHeight - visibleScreenBottom - visibleLegendHeight
             )
-            let backgroundScale = isScreenFullView ? Style.Layout.Page.fullViewBackgroundScale : 1
+            let bookingOpacity = 1 - screenProgress
 
             ZStack(alignment: .bottomTrailing) {
                 Style.Palette.background.ignoresSafeArea()
@@ -73,12 +73,9 @@ struct MovieHomePage: View {
                     .scrollBounceBehavior(.basedOnSize, axes: .vertical)
                 }
                 .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
-                .scaleEffect(backgroundScale)
+                .opacity(bookingOpacity)
+                .allowsHitTesting(bookingOpacity > 0.05)
                 .clipped()
-                .animation(
-                    .spring(response: Style.Layout.Screen.springResponse, dampingFraction: Style.Layout.Screen.springDamping),
-                    value: isScreenFullView
-                )
 
                 VStack(spacing: 0) {
                     MovieScreenIndicator(
@@ -91,20 +88,22 @@ struct MovieHomePage: View {
                     .padding(.bottom, visibleScreenBottom)
 
                     legendBar
+                        .opacity(bookingOpacity)
                         .padding(.bottom, Style.Layout.Page.legendBottom)
                 }
                 .frame(width: geometry.size.width, height: geometry.size.height, alignment: .bottom)
                 .offset(y: hiddenLegendOffset)
                 .clipped()
 
-                if !isScreenFullView {
+                if bookingOpacity > 0.05 {
                     seatMapControlOverlay
+                        .opacity(bookingOpacity)
                 }
 
                 if showsTheatreView {
                     theatreOverlay
                         .transition(.opacity)
-                        .zIndex(1)
+                        .zIndex(2)
                 }
             }
         }
@@ -320,6 +319,7 @@ struct MovieHomePage: View {
             }
         }
     }
+
 }
 
 #Preview {

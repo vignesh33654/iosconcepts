@@ -146,12 +146,12 @@ private enum SelectedChairConfig {
         static let endSize: Float = Model.scale
         static let popSize: Float = 1.2
         static let spin: CGFloat = -400
-        static let spinTime: TimeInterval = 0.4
+        static let spinTime: TimeInterval = 0.8
         static let settleTime: TimeInterval = 0.16
     }
 
     enum Model {
-        static let scale: Float = 1.5
+        static let scale: Float = 1.3
         static let pitchDegrees: Float = -90
         static let yawDegrees: Float = -90
         static let rollDegrees: Float = 0

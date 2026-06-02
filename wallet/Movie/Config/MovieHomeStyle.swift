@@ -69,7 +69,7 @@ struct MovieHomeStyle {
             static let padding: CGFloat = 24
             static let headerTop: CGFloat = 12
             static let timesTop: CGFloat = 22
-            static let seatsTop: CGFloat = 24
+            static let seatsTop: CGFloat = 40
             static let screenBottom: CGFloat = 18
             static let legendBottom: CGFloat = 16
             static let minimumScrollableHeight: CGFloat = 120
@@ -113,16 +113,22 @@ struct MovieHomeStyle {
             static let labelHeight: CGFloat = 14
             static let touchTargetHeight: CGFloat = 70
             static let previewHeight: CGFloat = 70
-            static let previewAnimationDuration: TimeInterval = 1
-            static let expandThreshold: CGFloat = 0.4
-            static let collapseThreshold: CGFloat = 0.5
+            static let previewFocalY: CGFloat = 0.42 // 0 = top, 1 = bottom. Keeps the cinema screen visible in the cropped sheet.
+            static let previewCollapsedScale: CGFloat = 1.55
+            static let previewExpandedScale: CGFloat = 1
+            static let previewDelay: TimeInterval = 1
+            static let previewAnimationDuration: TimeInterval = 2
+            static let expandThreshold: CGFloat = 0.45
+            static let collapseThreshold: CGFloat = 0.8
             static let flickVelocity: CGFloat = 400
             static let springResponse: TimeInterval = 0.45
-            static let springDamping: Double = 0.88
+            static let springDamping: Double = 0.70
             static let toggleSpringResponse: TimeInterval = 0.4
+            static let closeResponse: TimeInterval = 0.55
+            static let closeDamping: Double = 0.98
             static let fullViewButton: CGFloat = 48
             static let fullViewIcon: CGFloat = 16
-            static let fullViewTop: CGFloat = 24
+            static let fullViewTop: CGFloat = 20
             static let fullViewTrailing: CGFloat = 20
             static let fullViewBackgroundOpacity: Double = 0.42
             static let fullViewButtonVisibilityThreshold: CGFloat = 0.95
@@ -131,8 +137,6 @@ struct MovieHomeStyle {
             static let gap: CGFloat = 10
             static let tracking: CGFloat = 2.4
             static let labelTransitionDuration: TimeInterval = 0.45
-            static let textShaderDuration: TimeInterval = 1.6
-            static let textShaderWidthRatio: CGFloat = 3
             static let arcHeight: CGFloat = 20
             static let arcPadding: CGFloat = 32
             static let lineWidth: CGFloat = 1.6
@@ -182,6 +186,7 @@ struct MovieHomeStyle {
         static let screenLabel: CGFloat = 11
         static let legend: CGFloat = 12
         static let seatNumber: CGFloat = 10
+        static let fullViewTitle: CGFloat = 18
     }
 
     enum Asset {

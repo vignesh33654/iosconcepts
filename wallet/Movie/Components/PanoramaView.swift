@@ -45,18 +45,30 @@ struct PanoramaView: UIViewRepresentable {
     let imageName: String
 
     private enum Config {
+        // Rendering quality.
         static let preferredFramesPerSecond = 60
-        static let maximumVerticalAngle: Float = 80
-        static let minimumVerticalAngle: Float = -80
-        static let sphereRadius: CGFloat = 10
         static let sphereSegmentCount = 192
         static let materialMaxAnisotropy: CGFloat = 16
+
+        // Viewer movement limits and drag feel.
+        static let maximumVerticalAngle: Float = 80
+        static let minimumVerticalAngle: Float = -80
+        static let rotationSensitivity: CGFloat = 0.75
+        static let allowsTranslation = false
+        static let inertiaEnabled = false
+
+        // Panorama sphere setup.
+        static let sphereRadius: CGFloat = 10
         static let sphereScale = SCNVector3(1, 1, -1)
+
+        // Camera feel.
         static let cameraPosition = SCNVector3(0, 0, 0)
         static let cameraFieldOfView: CGFloat = 95
         static let entranceFieldOfView: CGFloat = 130
         static let entranceCameraPosition = SCNVector3(0, 0, 2.4)
         static let entranceDuration: CFTimeInterval = 0.8
+
+        // Fallback image shown only when the panorama asset is missing.
         static let placeholderSize = CGSize(width: 2048, height: 1024)
         static let placeholderGradientLocations: [CGFloat] = [0, 1]
         static let placeholderGridAlpha: CGFloat = 0.18
@@ -120,7 +132,9 @@ struct PanoramaView: UIViewRepresentable {
         view.preferredFramesPerSecond = Config.preferredFramesPerSecond
         view.defaultCameraController.maximumVerticalAngle = Config.maximumVerticalAngle
         view.defaultCameraController.minimumVerticalAngle = Config.minimumVerticalAngle
-        view.defaultCameraController.inertiaEnabled = true
+        view.defaultCameraController.inertiaEnabled = Config.inertiaEnabled
+        view.cameraControlConfiguration.rotationSensitivity = Config.rotationSensitivity
+        view.cameraControlConfiguration.allowsTranslation = Config.allowsTranslation
     }
 
     private func makeScene(imageName: String) -> (scene: SCNScene, cameraNode: SCNNode) {
