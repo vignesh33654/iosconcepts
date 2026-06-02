@@ -109,16 +109,16 @@ struct MovieHomeStyle {
 
         enum Screen {
             static let collapsedHeight: CGFloat = 1
-            static let expandedHeightRatio: CGFloat = 0.5 // Percent of the available iPhone height.
+            static let expandedHeightRatio: CGFloat = 0.75 // Percent of the available iPhone height.
             static let labelHeight: CGFloat = 14
             static let touchTargetHeight: CGFloat = 70
             static let previewHeight: CGFloat = 70
-            static let previewFocalY: CGFloat = 0.42 // 0 = top, 1 = bottom. Keeps the cinema screen visible in the cropped sheet.
+            static let previewFocalY: CGFloat = 0.53 // 0 = top, 1 = bottom. Keeps the cinema screen visible in the cropped sheet.
             static let previewCollapsedScale: CGFloat = 1
             static let previewExpandedScale: CGFloat = 1
             static let previewDelay: TimeInterval = 1
-            static let previewAnimationDuration: TimeInterval = 2
-            static let previewLabelDelay: TimeInterval = 0.7
+            static let previewAnimationDuration: TimeInterval = 0.5
+            static let previewLabelDelay: TimeInterval = 0.1
             static let expandThreshold: CGFloat = 0.45
             static let collapseThreshold: CGFloat = 0.8
             static let flickVelocity: CGFloat = 400

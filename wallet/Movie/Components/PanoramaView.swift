@@ -63,10 +63,7 @@ struct PanoramaView: UIViewRepresentable {
 
         // Camera feel.
         static let cameraPosition = SCNVector3(0, 0, 0)
-        static let cameraFieldOfView: CGFloat = 95
-        static let entranceFieldOfView: CGFloat = 130
-        static let entranceCameraPosition = SCNVector3(0, 0, 2.4)
-        static let entranceDuration: CFTimeInterval = 0.8
+        static let cameraFieldOfView: CGFloat = 120
 
         // Fallback image shown only when the panorama asset is missing.
         static let placeholderSize = CGSize(width: 2048, height: 1024)
@@ -95,32 +92,13 @@ struct PanoramaView: UIViewRepresentable {
         view.pointOfView = sceneSetup.cameraNode
         context.coordinator.cameraNode = sceneSetup.cameraNode
 
-        let cameraNode = sceneSetup.cameraNode
-        cameraNode.camera?.fieldOfView = Config.entranceFieldOfView
-        cameraNode.position = Config.entranceCameraPosition
-
         return view
     }
 
-    func updateUIView(_ view: SCNView, context: Context) {
-        guard !context.coordinator.didAnimateEntrance else { return }
-        context.coordinator.didAnimateEntrance = true
-        context.coordinator.playEntrance()
-    }
+    func updateUIView(_ view: SCNView, context: Context) {}
 
     final class Coordinator {
         weak var cameraNode: SCNNode?
-        var didAnimateEntrance = false
-
-        func playEntrance() {
-            guard let cameraNode, let camera = cameraNode.camera else { return }
-            SCNTransaction.begin()
-            SCNTransaction.animationDuration = Config.entranceDuration
-            SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeOut)
-            camera.fieldOfView = Config.cameraFieldOfView
-            cameraNode.position = Config.cameraPosition
-            SCNTransaction.commit()
-        }
     }
 
     private func configure(_ view: SCNView) {

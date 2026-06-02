@@ -10,7 +10,6 @@ struct MovieScreenIndicator: View {
     @Binding var isFullView: Bool
 
     @State private var dragAnchor: CGFloat? = nil
-    @State private var didRevealPreview = false
 
     var body: some View {
         let collapsedHeight = Style.Layout.Screen.collapsedHeight
@@ -76,25 +75,9 @@ struct MovieScreenIndicator: View {
     }
 
     private var animatedLabel: some View {
-        ZStack {
-            Text("SCREEN THIS WAY")
-                .font(.geist(Style.Typography.screenLabel))
-                .tracking(Style.Layout.Screen.tracking)
-                .foregroundStyle(.white.opacity(0.78))
-                .offset(y: didRevealPreview ? -3 : 0)
-                .opacity(didRevealPreview ? 0 : 1)
-
-            shaderLabel
-                .offset(y: didRevealPreview ? 0 : 3)
-                .opacity(didRevealPreview ? 1 : 0)
-        }
-        .animation(.easeInOut(duration: Style.Layout.Screen.labelTransitionDuration), value: didRevealPreview)
-        .frame(height: Style.Layout.Screen.labelHeight)
-    }
-
-    private var shaderLabel: some View {
         labelText
             .foregroundStyle(.white.opacity(0.58))
+            .frame(height: Style.Layout.Screen.labelHeight)
     }
 
     private var labelText: some View {
@@ -105,8 +88,6 @@ struct MovieScreenIndicator: View {
 
     @MainActor
     private func revealPreviewIfNeeded() async {
-        guard !didRevealPreview else { return }
-
         try? await Task.sleep(nanoseconds: UInt64(Style.Layout.Screen.previewDelay * 1_000_000_000))
         guard !Task.isCancelled, !isFullView else { return }
 
@@ -115,13 +96,6 @@ struct MovieScreenIndicator: View {
 
         withAnimation(.easeInOut(duration: Style.Layout.Screen.previewAnimationDuration)) {
             height = min(expandedHeight, Style.Layout.Screen.previewHeight)
-        }
-
-        try? await Task.sleep(nanoseconds: UInt64(Style.Layout.Screen.previewLabelDelay * 1_000_000_000))
-        guard !Task.isCancelled, !isFullView else { return }
-
-        withAnimation(.easeInOut(duration: Style.Layout.Screen.labelTransitionDuration)) {
-            didRevealPreview = true
         }
     }
 

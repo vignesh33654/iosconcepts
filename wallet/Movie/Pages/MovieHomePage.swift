@@ -95,11 +95,6 @@ struct MovieHomePage: View {
                 .offset(y: hiddenLegendOffset)
                 .clipped()
 
-                if bookingOpacity > 0.05 {
-                    seatMapControlOverlay
-                        .opacity(bookingOpacity)
-                }
-
                 if showsTheatreView {
                     theatreOverlay
                         .transition(.opacity)
