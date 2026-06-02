@@ -28,7 +28,7 @@ struct MovieScreenIndicator: View {
                 .allowsHitTesting(false)
                 .animation(.easeInOut(duration: Style.Layout.Screen.labelTransitionDuration), value: isFullView)
 
-            screenContent(height: clampedHeight)
+            screenContent(height: clampedHeight, isInteractive: isFullView)
                 .overlay(alignment: .topTrailing) {
                     if isFullView {
                         closeButton
@@ -81,12 +81,15 @@ struct MovieScreenIndicator: View {
                 .font(.geist(Style.Typography.screenLabel))
                 .tracking(Style.Layout.Screen.tracking)
                 .foregroundStyle(.white.opacity(0.78))
+                .offset(y: didRevealPreview ? -3 : 0)
                 .opacity(didRevealPreview ? 0 : 1)
 
             shaderLabel
+                .offset(y: didRevealPreview ? 0 : 3)
                 .opacity(didRevealPreview ? 1 : 0)
         }
         .animation(.easeInOut(duration: Style.Layout.Screen.labelTransitionDuration), value: didRevealPreview)
+        .frame(height: Style.Layout.Screen.labelHeight)
     }
 
     private var shaderLabel: some View {
@@ -103,7 +106,6 @@ struct MovieScreenIndicator: View {
     @MainActor
     private func revealPreviewIfNeeded() async {
         guard !didRevealPreview else { return }
-        didRevealPreview = true
 
         try? await Task.sleep(nanoseconds: UInt64(Style.Layout.Screen.previewDelay * 1_000_000_000))
         guard !Task.isCancelled, !isFullView else { return }
@@ -114,9 +116,16 @@ struct MovieScreenIndicator: View {
         withAnimation(.easeInOut(duration: Style.Layout.Screen.previewAnimationDuration)) {
             height = min(expandedHeight, Style.Layout.Screen.previewHeight)
         }
+
+        try? await Task.sleep(nanoseconds: UInt64(Style.Layout.Screen.previewLabelDelay * 1_000_000_000))
+        guard !Task.isCancelled, !isFullView else { return }
+
+        withAnimation(.easeInOut(duration: Style.Layout.Screen.labelTransitionDuration)) {
+            didRevealPreview = true
+        }
     }
 
-    private func screenContent(height: CGFloat) -> some View {
+    private func screenContent(height: CGFloat, isInteractive: Bool) -> some View {
         GeometryReader { geometry in
             let visibleHeight = max(height, Style.Layout.Screen.collapsedHeight)
             let previewProgress = min(1, max(0, visibleHeight / max(1, Style.Layout.Screen.previewHeight)))
@@ -130,12 +139,22 @@ struct MovieScreenIndicator: View {
 
             ZStack(alignment: .top) {
                 PanoramaView(imageName: Style.Asset.theatre)
-                    .allowsHitTesting(false)
+                    .allowsHitTesting(isInteractive)
                     .frame(width: geometry.size.width, height: imageHeight)
                     .offset(y: verticalOffset)
 
                 Rectangle()
-                    .fill(Style.Palette.screenCenter)
+                    .fill(
+                        LinearGradient(
+                            stops: [
+                                .init(color: .black, location: 0.18),
+                                .init(color: Style.Palette.screenCenter, location: 0.46),
+                                .init(color: .black, location: 0.75)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
                     .opacity(lineVisibility)
                     .frame(height: Style.Layout.Screen.collapsedHeight)
             }

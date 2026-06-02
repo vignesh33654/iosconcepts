@@ -114,10 +114,11 @@ struct MovieHomeStyle {
             static let touchTargetHeight: CGFloat = 70
             static let previewHeight: CGFloat = 70
             static let previewFocalY: CGFloat = 0.42 // 0 = top, 1 = bottom. Keeps the cinema screen visible in the cropped sheet.
-            static let previewCollapsedScale: CGFloat = 1.55
+            static let previewCollapsedScale: CGFloat = 1
             static let previewExpandedScale: CGFloat = 1
             static let previewDelay: TimeInterval = 1
             static let previewAnimationDuration: TimeInterval = 2
+            static let previewLabelDelay: TimeInterval = 0.7
             static let expandThreshold: CGFloat = 0.45
             static let collapseThreshold: CGFloat = 0.8
             static let flickVelocity: CGFloat = 400
@@ -136,7 +137,7 @@ struct MovieHomeStyle {
             static let gradientEndRadius: CGFloat = 380
             static let gap: CGFloat = 10
             static let tracking: CGFloat = 2.4
-            static let labelTransitionDuration: TimeInterval = 0.45
+            static let labelTransitionDuration: TimeInterval = 0.65
             static let arcHeight: CGFloat = 20
             static let arcPadding: CGFloat = 32
             static let lineWidth: CGFloat = 1.6
@@ -192,7 +193,7 @@ struct MovieHomeStyle {
     enum Asset {
         static let back = "Back"
         static let poster = "Header image"
-        static let theatre = "Movie Theatre view"
+        static let theatre = "Movie Theatre 2"
         static let availableChair = "Chair"
     }
 }
